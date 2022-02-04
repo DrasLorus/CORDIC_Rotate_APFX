@@ -1,0 +1,7 @@
+.cache
+
+build
+lib
+bin
+compile_commands.json
+*octave-workspace
