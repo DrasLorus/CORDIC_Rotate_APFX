@@ -60,5 +60,13 @@ if ((NOT EXISTS ${AP_INCLUDE_DIR}/ap_int.h) OR (NOT EXISTS
 endif ()
 
 add_library (cordic STATIC sources/CCordicRotate/CCordicRotate.cpp)
+target_include_directories (cordic PUBLIC sources)
 target_include_directories (cordic SYSTEM PUBLIC ${AP_INCLUDE_DIR})
 
+find_package(Catch2 REQUIRED)
+
+add_library (catch_common OBJECT sources/tb/main_catch2.cpp)
+target_link_libraries(catch_common PUBLIC Catch2::Catch2)
+
+add_executable(cordic_tb sources/tb/cordic_tb.cpp)
+target_link_libraries(cordic_tb PUBLIC cordic catch_common)
