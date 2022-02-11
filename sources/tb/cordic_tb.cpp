@@ -8,9 +8,10 @@
 using namespace std;
 
 using Catch::Matchers::Floating::WithinAbsMatcher;
-    
+
+typedef CCordicRotate<8, 14, 4, 17, 5, 19, 7, 12> cordic_legacy;
+
 TEST_CASE("Adaptive CORDIC work as intended", "[!hide][WIP]") {
-    typedef CCordicRotate<8, 14, 4, 17, 5, 19, 7, 12> cordic_legacy;
 
     string input_fn  = "../data/input.dat";  // _8_14_4_17_5_19_7_12
     string output_fn = "../data/output.dat"; // _8_14_4_17_5_19_7_12
@@ -72,9 +73,11 @@ TEST_CASE("Adaptive CORDIC work as intended", "[!hide][WIP]") {
     // Return 0 if the test passed
 }
 
+typedef CCordicRotateRomHalfPi<16, 4, 6, 64> cordic_rom;
+
 TEST_CASE("ROM-based Cordic works with C-Types", "[CORDIC]") {
     SECTION("W:16 - I:4 - Stages:6 - q:64") {
-        typedef CCordicRotateRomHalfPi<16, 4, 6, 64> cordic_rom;
+        static constexpr cordic_rom cordic {};
 
         string input_fn  = "../data/input.dat";  // _8_14_4_17_5_19_7_12
         string output_fn = "../data/output.dat"; // _8_14_4_17_5_19_7_12
@@ -110,8 +113,6 @@ TEST_CASE("ROM-based Cordic works with C-Types", "[CORDIC]") {
         // Save the results to a file
         FILE.open("results.dat");
 
-        constexpr cordic_rom cordic {};
-
         constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
 
         // Executing the encoder
@@ -141,7 +142,8 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
     constexpr unsigned n_lines = 100000;
 
     SECTION("W:16 - I:4 - Stages:6 - q:64") {
-        typedef CCordicRotateRomHalfPi<16, 4, 6, 64> cordic_rom;
+
+        static constexpr cordic_rom cordic {};
 
         string input_fn = "../data/input.dat";
 
@@ -184,7 +186,6 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         out_stream.open("results_ap.dat");
         // FILE * romf = fopen("rom.dat", "w");
 
-        constexpr cordic_rom cordic {};
 
         constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
 
@@ -219,8 +220,9 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
     }
 
     SECTION("W:16 - I:4 - Stages:6 - q:64 - internal scaling") {
-        typedef CCordicRotateRomHalfPi<16, 4, 6, 64> cordic_rom;
-
+        // typedef CCordicRotateRomHalfPi<16, 4, 6, 64> cordic_rom;
+        static constexpr cordic_rom cordic {};
+        
         string input_fn = "../data/input.dat";
 
         constexpr double   rotation = cordic_rom::rom_cordic.rotation;
@@ -261,8 +263,6 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         // Save the results to a file
         out_stream.open("results_ap.dat");
         // FILE * romf = fopen("rom.dat", "w");
-
-        constexpr cordic_rom cordic {};
 
         constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
 

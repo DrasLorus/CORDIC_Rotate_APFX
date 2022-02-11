@@ -45,10 +45,9 @@ template <uint8_t N_STAGES,
           uint8_t OUT_I,
           uint8_t ATAN_I>
 class CCordicRotate {
-private:
-    static constexpr auto atanLUT = CAtanLUT<N_STAGES, uint64_t, ATAN_I>();
-
 public:
+    static constexpr const CAtanLUT<N_STAGES, uint64_t, ATAN_I> & atanLUT = CAtanLUT<N_STAGES, uint64_t, ATAN_I>();
+
     static void process(
         const ap_fixed<TH_W, TH_I> & fx_angle,
         const ap_fixed<IN_W, IN_I> & fx_re_in,
