@@ -1,6 +1,5 @@
 #include "CCordicRotate.hpp"
 
-
 #define uint2int(sz, in) ((in & (1U << sz)) == (1U << sz)   \
                               ? static_cast<short>(~in + 1) \
                               : static_cast<short>(in))
@@ -8,14 +7,14 @@
 template <>
 void CCordicRotate<8, 14, 4, 17, 5, 19, 7, 12>::process(
     const ap_fixed<14, 4> & fx_angle,
-    const ap_fixed<17, 5> &  fx_re_in,
-    const ap_fixed<17, 5> &  fx_im_in,
+    const ap_fixed<17, 5> & fx_re_in,
+    const ap_fixed<17, 5> & fx_im_in,
     ap_fixed<19, 7> &       fx_re_out,
     ap_fixed<19, 7> &       fx_im_out) {
 
-    constexpr uint64_t sign_mask_14 = 0x2000;  // 0bxxx xx10 0000 0000 0000
-    constexpr uint64_t sign_mask_17 = 0x10000; // 0bxx1 0000 0000 0000 0000
-    constexpr uint64_t sign_mask_19 = 0x10000; // 0b100 0000 0000 0000 0000
+    // constexpr uint64_t sign_mask_14 = 0x2000;  // 0bxxx xx10 0000 0000 0000
+    // constexpr uint64_t sign_mask_17 = 0x10000; // 0bxx1 0000 0000 0000 0000
+    // constexpr uint64_t sign_mask_19 = 0x10000; // 0b100 0000 0000 0000 0000
 
     const uint16_t angle_bits = fx_angle.bits_to_uint64();
 
