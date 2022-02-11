@@ -54,7 +54,7 @@ public:
             const double re_x = floor(double(scale_factor - 1) * cos(-rotation / double(q) * double(n)));
             const double im_x = floor(double(scale_factor - 1) * sin(-rotation / double(q) * double(n)));
 
-            const std::complex<int64_t> x {re_x, im_x};
+            const std::complex<int64_t> x {int64_t(re_x), int64_t(im_x)};
 
             double  error = 1000.;
             uint8_t rom_v = 0x0;

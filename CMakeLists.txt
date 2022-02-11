@@ -19,7 +19,6 @@ if (EXPORT_COMMANDS)
     set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif ()
 
-
 option (ENABLE_XILINX "use Xilinx provided and proprietary headers." ON)
 if (ENABLE_XILINX)
   set (
@@ -54,8 +53,7 @@ if ((NOT EXISTS ${AP_INCLUDE_DIR}/ap_int.h) OR (NOT EXISTS
   message (
     FATAL_ERROR
       "Arbitrary precision headers not found in ${AP_INCLUDE_DIR}.\n"
-      "Consider disabling the ap_int feature using `-DENABLE_AP_INT=OFF`"
-      " or provide a suitable path to the headers."
+      "Please provide a suitable path to the headers."
   )
 endif ()
 

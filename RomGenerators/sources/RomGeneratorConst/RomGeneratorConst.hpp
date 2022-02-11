@@ -96,7 +96,7 @@ private:
 public:
     uint8_t rom[max_length];
 
-    constexpr CRomGeneratorConst() {
+    constexpr CRomGeneratorConst() : rom() {
         for (unsigned n = 0; n < max_length; n++) {
             const double chip_rotation = rotation / double(q) * double(n);
             rom[n]                     = cordic_rom_gen(chip_rotation);
@@ -106,7 +106,7 @@ public:
 
 template <unsigned In_W, unsigned NStages, unsigned Tq>
 void generate_rom_header_const(const char * filename = "rom_cordic.h") {
-    constexpr CRomGeneratorConst<In_W, NStages, Tq> rom;
+    constexpr CRomGeneratorConst<In_W, NStages, Tq> rom{};
 
     FILE * rom_file = fopen(filename, "w");
     if (!bool(rom_file)) {
@@ -130,7 +130,7 @@ void generate_rom_header_const(const char * filename = "rom_cordic.h") {
 
 template <unsigned In_W, unsigned NStages, unsigned Tq>
 void generate_rom_header_const_raw(const char * filename = "rom_cordic.txt") {
-    constexpr CRomGeneratorConst<In_W, NStages, Tq> rom;
+    constexpr CRomGeneratorConst<In_W, NStages, Tq> rom{};
 
     FILE * rom_file = fopen(filename, "w");
     if (!bool(rom_file)) {

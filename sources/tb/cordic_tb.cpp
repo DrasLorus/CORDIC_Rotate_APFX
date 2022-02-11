@@ -8,7 +8,7 @@
 using namespace std;
 
 using Catch::Matchers::Floating::WithinAbsMatcher;
-
+    
 TEST_CASE("Adaptive CORDIC work as intended", "[!hide][WIP]") {
     typedef CCordicRotate<8, 14, 4, 17, 5, 19, 7, 12> cordic_legacy;
 
@@ -182,7 +182,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
         // Save the results to a file
         out_stream.open("results_ap.dat");
-        FILE * romf = fopen("rom.dat", "w");
+        // FILE * romf = fopen("rom.dat", "w");
 
         constexpr cordic_rom cordic {};
 
@@ -193,8 +193,8 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             // Execute
             const uint8_t counter = uint8_t(iter & cnt_mask);
 
-            if (iter < cnt_mask + 1)
-                fprintf(romf, "%03d\n", (uint16_t) cordic.rom_cordic.rom[counter]);
+            // if (iter < cnt_mask + 1)
+            //     fprintf(romf, "%03d\n", (uint16_t) cordic.rom_cordic.rom[counter]);
 
             cordic.cordic(
                 values_re_in[iter], values_im_in[iter],
@@ -211,7 +211,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             REQUIRE_THAT(values_im_out[iter].to_double() * 5. / 8. / cordic_rom::out_scale_factor, WithinAbsMatcher(results_im[iter], abs_margin));
         }
         out_stream.close();
-        fclose(romf);
+        // fclose(romf);
 
         // Compare the results file with the golden results
         // int retval = 0;
@@ -260,7 +260,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
         // Save the results to a file
         out_stream.open("results_ap.dat");
-        FILE * romf = fopen("rom.dat", "w");
+        // FILE * romf = fopen("rom.dat", "w");
 
         constexpr cordic_rom cordic {};
 
@@ -271,8 +271,8 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             // Execute
             const uint8_t counter = uint8_t(iter & cnt_mask);
 
-            if (iter < cnt_mask + 1)
-                fprintf(romf, "%03d\n", (uint16_t) cordic.rom_cordic.rom[counter]);
+            // if (iter < cnt_mask + 1)
+            //     fprintf(romf, "%03d\n", (uint16_t) cordic.rom_cordic.rom[counter]);
 
             cordic.cordic(
                 values_re_in[iter], values_im_in[iter],
@@ -293,7 +293,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
                                           abs_margin));
         }
         out_stream.close();
-        fclose(romf);
+        // fclose(romf);
 
         // Compare the results file with the golden results
         // int retval = 0;
