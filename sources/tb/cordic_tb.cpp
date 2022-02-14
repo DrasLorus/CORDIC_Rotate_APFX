@@ -186,7 +186,6 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         out_stream.open("results_ap.dat");
         // FILE * romf = fopen("rom.dat", "w");
 
-
         constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
 
         // Executing the encoder
@@ -222,7 +221,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
     SECTION("W:16 - I:4 - Stages:6 - q:64 - internal scaling") {
         // typedef CCordicRotateRomHalfPi<16, 4, 6, 64> cordic_rom;
         static constexpr cordic_rom cordic {};
-        
+
         string input_fn = "../data/input.dat";
 
         constexpr double   rotation = cordic_rom::rom_cordic.rotation;
@@ -298,5 +297,29 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         // Compare the results file with the golden results
         // int retval = 0;
         // Return 0 if the test passed
+    }
+}
+
+TEST_CASE("ROM-based Cordic constexpr are evaluated during compilation.", "[CORDIC]") {
+    constexpr unsigned n_lines = 100000;
+
+    SECTION("W:16 - I:4 - Stages:6 - q:64 - C-Types") {
+
+        static constexpr cordic_rom cordic {};
+
+        constexpr double   rotation   = cordic_rom::rom_cordic.rotation;
+        constexpr double   q          = cordic_rom::rom_cordic.q;
+        constexpr uint64_t max_length = cordic_rom::rom_cordic.max_length;
+
+        constexpr complex<int64_t> value_in = (1U << 12) * 97;
+        constexpr uint8_t          angle    = 169;
+
+        double results_re[n_lines];
+        double results_im[n_lines];
+
+        constexpr complex<int64_t> res = cordic.cordic(value_in, angle);
+        static_assert(res == cordic.cordic(value_in, angle), "Test");
+        REQUIRE_FALSE(res == cordic.cordic(complex<int64_t>(1, 0), angle));
+        REQUIRE(res == cordic.cordic(value_in, angle));
     }
 }
