@@ -317,9 +317,10 @@ TEST_CASE("ROM-based Cordic constexpr are evaluated during compilation.", "[CORD
         double results_re[n_lines];
         double results_im[n_lines];
 
-        constexpr complex<int64_t> res = cordic.cordic(value_in, angle);
-        static_assert(res == cordic.cordic(value_in, angle), "Test");
-        REQUIRE_FALSE(res == cordic.cordic(complex<int64_t>(1, 0), angle));
-        REQUIRE(res == cordic.cordic(value_in, angle));
+        constexpr complex<int64_t> res1 = cordic.cordic(value_in, angle);
+        constexpr complex<int64_t> res2 = cordic.cordic(value_in, angle);
+        static_assert(res1 == res2, "Test");
+        REQUIRE_FALSE(res1 == cordic.cordic(complex<int64_t>(1, 0), angle));
+        REQUIRE(res1 == cordic.cordic(value_in, angle));
     }
 }

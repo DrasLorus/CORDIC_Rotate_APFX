@@ -25,7 +25,7 @@ class CCordicRotateRomHalfPi {
     static_assert(TNStages > 1, "2 stages of CORDIC is the minimum.");
 
 public:
-    static constexpr const CRomGeneratorConst<TIn_W, TNStages, Tq> & rom_cordic = CRomGeneratorConst<TIn_W, TNStages, Tq>();
+    static constexpr const CRomGeneratorConst<TIn_W, TNStages, Tq> & rom_cordic{};
 
     static constexpr unsigned In_W    = TIn_W;
     static constexpr unsigned In_I    = TIn_I;
