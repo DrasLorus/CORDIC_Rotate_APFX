@@ -119,7 +119,7 @@ TEST_CASE("ROM-based Cordic works with C-Types", "[CORDIC]") {
         for (unsigned iter = 0; iter < n_lines; iter++) {
             // Execute
 
-            values_out[iter] = cordic.cordic(values_in[iter], (iter & 255));
+            values_out[iter] = cordic_rom::cordic(values_in[iter], (iter & 255));
 
             // Display the results
             // cout << "Series " << iter;
@@ -196,7 +196,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             // if (iter < cnt_mask + 1)
             //     fprintf(romf, "%03d\n", (uint16_t) cordic.rom_cordic.rom[counter]);
 
-            cordic.cordic(
+            cordic_rom::cordic(
                 values_re_in[iter], values_im_in[iter],
                 counter,
                 values_re_out[iter], values_im_out[iter]);
@@ -273,7 +273,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             // if (iter < cnt_mask + 1)
             //     fprintf(romf, "%03d\n", (uint16_t) cordic.rom_cordic.rom[counter]);
 
-            cordic.cordic(
+            cordic_rom::cordic(
                 values_re_in[iter], values_im_in[iter],
                 counter,
                 values_re_out[iter], values_im_out[iter]);
@@ -303,15 +303,13 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 TEST_CASE("ROM-based Cordic constexpr are evaluated during compilation.", "[CORDIC]") {
     SECTION("W:16 - I:4 - Stages:6 - q:64 - C-Types") {
 
-        static constexpr cordic_rom cordic {};
-
         constexpr complex<int64_t> value_in = (1U << 12) * 97;
         constexpr uint8_t          angle    = 169;
 
-        constexpr complex<int64_t> res1 = cordic.cordic(value_in, angle);
-        constexpr complex<int64_t> res2 = cordic.cordic(value_in, angle);
+        constexpr complex<int64_t> res1 = cordic_rom::cordic(value_in, angle);
+        constexpr complex<int64_t> res2 = cordic_rom::cordic(value_in, angle);
         static_assert(res1 == res2, "Test");
-        REQUIRE_FALSE(res1 == cordic.cordic(complex<int64_t>(1, 0), angle));
-        REQUIRE(res1 == cordic.cordic(value_in, angle));
+        REQUIRE_FALSE(res1 == cordic_rom::cordic(complex<int64_t>(1, 0), angle));
+        REQUIRE(res1 == cordic_rom::cordic(value_in, angle));
     }
 }

@@ -41,8 +41,8 @@ public:
         return in * kn_i / 8U;
     }
 
-    constexpr std::complex<int64_t> cordic(std::complex<int64_t> x_in,
-                                           uint8_t               counter) const {
+    static constexpr std::complex<int64_t> cordic(std::complex<int64_t> x_in,
+                                           uint8_t               counter) {
 
         int64_t A = x_in.real();
         int64_t B = x_in.imag();
@@ -72,8 +72,8 @@ public:
         return in * kn_values[NStages - 1];
     }
 
-    constexpr std::complex<double> cordic(std::complex<double> x_in,
-                                          uint8_t              counter) const {
+    static constexpr std::complex<double> cordic(std::complex<double> x_in,
+                                          uint8_t              counter) {
         const std::complex<int64_t> fx_x_in(int64_t(x_in.real() * double(in_scale_factor)),
                                             int64_t(x_in.imag() * double(in_scale_factor)));
 
@@ -89,9 +89,9 @@ public:
         return ap_int<ap_W>(tmp >> 3);
     }
 
-    void cordic(const ap_int<In_W> & re_in, const ap_int<In_W> & im_in,
+    static void cordic(const ap_int<In_W> & re_in, const ap_int<In_W> & im_in,
                 const ap_uint<8> & counter,
-                ap_int<Out_W> & re_out, ap_int<Out_W> & im_out) const {
+                ap_int<Out_W> & re_out, ap_int<Out_W> & im_out) {
 
         const ap_uint<6 + 1> R = (rom_cordic.rom[counter] >> (7 - NStages));
 
