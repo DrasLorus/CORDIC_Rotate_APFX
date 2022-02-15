@@ -23,7 +23,14 @@ option (EXPORT_COMMANDS "export compile commands, for use with clangd for exampl
 option (ENABLE_XILINX "use Xilinx provided and proprietary headers." OFF)
 
 option (ENABLE_TESTING "use Catch2 in conjunction with CTest as a test suite." ON)
+
+option (PEDANTIC "use -Wall and -pedantic." ON)
+
 ####################################################################################################
+
+if (PEDANTIC)
+  add_compile_options(-Wall -pedantic)
+endif ()
 
 if (EXPORT_COMMANDS)
   set (CMAKE_EXPORT_COMPILE_COMMANDS ON)

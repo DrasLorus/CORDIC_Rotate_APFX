@@ -40,7 +40,7 @@ private:
         double B = 0;
 
         uint8_t R    = 0;
-        uint8_t mask = 0x80;
+        const uint8_t sig_mask = 0x80;
 
         double beta = rot_in;
 
@@ -57,12 +57,12 @@ private:
         }
 
         if ((beta < -half_pi) || (beta > half_pi)) {
-            R    = R | mask;
+            R    = R | sig_mask;
             beta = beta < 0 ? beta + pi : beta - pi;
             // A    = -A;
             // B    = -B;
         } else {
-            R = R & (~mask);
+            R = R & (~sig_mask);
         }
 
         for (uint8_t u = 1; u < NStages + 1; u++) {
@@ -77,7 +77,7 @@ private:
 
             const double sigma = beta < 0 ? -1. : 1;
 
-            R = beta < 0 ? R | mask : R & ~mask;
+            R = beta < 0 ? R | mask : R & nmask;
 
             const double factor = sigma / double(1U << (u - 1));
 
