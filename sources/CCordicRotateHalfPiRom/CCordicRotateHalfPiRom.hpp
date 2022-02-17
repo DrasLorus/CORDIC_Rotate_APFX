@@ -1,3 +1,22 @@
+/*
+ *
+ * Copyright 2022 Camille "DrasLorus" Monière.
+ *
+ * This file is part of CORDIC_Rotate_APFX.
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * Lesser General Public License as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along with this program.
+ * If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+
 #ifndef C_CORDIC_ROTATE_ROM_HALF_PI_HPP
 #define C_CORDIC_ROTATE_ROM_HALF_PI_HPP
 
@@ -25,7 +44,7 @@ class CCordicRotateRomHalfPi {
     static_assert(TNStages > 1, "2 stages of CORDIC is the minimum.");
 
 public:
-    static constexpr const CRomGeneratorConst<TIn_W, TNStages, Tq> & rom_cordic{};
+    static constexpr const CRomGeneratorConst<TIn_W, TNStages, Tq> & rom_cordic {};
 
     static constexpr unsigned In_W    = TIn_W;
     static constexpr unsigned In_I    = TIn_I;
@@ -42,7 +61,7 @@ public:
     }
 
     static constexpr std::complex<int64_t> cordic(std::complex<int64_t> x_in,
-                                           uint8_t               counter) {
+                                                  uint8_t               counter) {
 
         int64_t A = x_in.real();
         int64_t B = x_in.imag();
@@ -73,7 +92,7 @@ public:
     }
 
     static constexpr std::complex<double> cordic(std::complex<double> x_in,
-                                          uint8_t              counter) {
+                                                 uint8_t              counter) {
         const std::complex<int64_t> fx_x_in(int64_t(x_in.real() * double(in_scale_factor)),
                                             int64_t(x_in.imag() * double(in_scale_factor)));
 
@@ -90,8 +109,8 @@ public:
     }
 
     static void cordic(const ap_int<In_W> & re_in, const ap_int<In_W> & im_in,
-                const ap_uint<8> & counter,
-                ap_int<Out_W> & re_out, ap_int<Out_W> & im_out) {
+                       const ap_uint<8> & counter,
+                       ap_int<Out_W> & re_out, ap_int<Out_W> & im_out) {
 
         const ap_uint<6 + 1> R = (rom_cordic.rom[counter] >> (7 - NStages));
 
