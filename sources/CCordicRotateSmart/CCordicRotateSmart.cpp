@@ -17,14 +17,14 @@
  *
  */
 
-#include "CCordicRotate.hpp"
+#include "CCordicRotateSmart.hpp"
 
 #define uint2int(sz, in) ((in & (1U << sz)) == (1U << sz)   \
                               ? static_cast<short>(~in + 1) \
                               : static_cast<short>(in))
 
 template <>
-void CCordicRotate<8, 14, 4, 17, 5, 19, 7, 12>::process(
+void CCordicRotateSmart<8, 14, 4, 17, 5, 19, 7, 12>::process(
     const ap_fixed<14, 4> & fx_angle,
     const ap_fixed<17, 5> & fx_re_in,
     const ap_fixed<17, 5> & fx_im_in,

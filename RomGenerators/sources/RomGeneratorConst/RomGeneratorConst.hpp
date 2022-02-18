@@ -58,7 +58,7 @@ private:
         double A = scale_factor - 1;
         double B = 0;
 
-        uint8_t R    = 0;
+        uint8_t       R        = 0;
         const uint8_t sig_mask = 0x80;
 
         double beta = rot_in;
@@ -124,8 +124,8 @@ public:
 };
 
 template <unsigned In_W, unsigned NStages, unsigned Tq>
-void generate_rom_header_const(const char * filename = "rom_cordic.h") {
-    constexpr CRomGeneratorConst<In_W, NStages, Tq> rom{};
+void generate_rom_header_cst(const char * filename) {
+    constexpr CRomGeneratorConst<In_W, NStages, Tq> rom {};
 
     FILE * rom_file = fopen(filename, "w");
     if (!bool(rom_file)) {
@@ -133,9 +133,17 @@ void generate_rom_header_const(const char * filename = "rom_cordic.h") {
         exit(EXIT_FAILURE);
     }
 
-    // fprintf(rom_file, "#ifndef ROM_CORDIC\n#define ROM_CORDIC\n\n");
+    char upper_file_def[64];
+    snprintf(upper_file_def, 64, "CORDIC_ROMS_CST_%u_%u_%u", In_W, NStages, Tq);
 
-    fprintf(rom_file, "constexpr uint8_t rom_cordic[%d] = {\n  ", rom.max_length);
+    char rom_name[64];
+    snprintf(rom_name, 64, "cst_%u_%u_%u", In_W, NStages, Tq);
+
+    fprintf(rom_file, "#ifndef %s\n#define %s\n\n", upper_file_def, upper_file_def);
+    fprintf(rom_file, "#include <cstdint>\n\n");
+    fprintf(rom_file, "namespace cordic_roms {\n");
+
+    fprintf(rom_file, "constexpr uint8_t %s[%d] = {\n  ", rom_name, rom.max_length);
     for (uint16_t u = 0; u < rom.max_length - 1; u++) {
         if (((u & 7) == 0) && u != 0) {
             fprintf(rom_file, "\n  ");
@@ -143,13 +151,14 @@ void generate_rom_header_const(const char * filename = "rom_cordic.h") {
         fprintf(rom_file, "%3d, ", uint16_t(rom.rom[u]));
     }
     fprintf(rom_file, "%3d};\n", uint16_t(rom.rom[rom.max_length - 1]));
-
-    // fprintf(rom_file, "#endif // ROM_CORDIC");
+    
+    fprintf(rom_file, "\n} // namespace cordic_roms\n\n");
+    fprintf(rom_file, "#endif // %s\n\n", upper_file_def);
 }
 
 template <unsigned In_W, unsigned NStages, unsigned Tq>
-void generate_rom_header_const_raw(const char * filename = "rom_cordic.txt") {
-    constexpr CRomGeneratorConst<In_W, NStages, Tq> rom{};
+void generate_rom_header_cst_raw(const char * filename = "rom_cordic.txt") {
+    constexpr CRomGeneratorConst<In_W, NStages, Tq> rom {};
 
     FILE * rom_file = fopen(filename, "w");
     if (!bool(rom_file)) {
@@ -161,7 +170,6 @@ void generate_rom_header_const_raw(const char * filename = "rom_cordic.txt") {
         fprintf(rom_file, "%03d\n", uint16_t(rom.rom[u]));
     }
     fprintf(rom_file, "%03d\n\n", uint16_t(rom.rom[rom.max_length - 1]));
-
 }
 
 #endif // _ROM_GENERATOR_CONST_

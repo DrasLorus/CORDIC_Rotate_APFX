@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef C_CORDIC_ROTATE_ROM_HALF_PI_HPP
-#define C_CORDIC_ROTATE_ROM_HALF_PI_HPP
+#ifndef C_CORDIC_ROTATE_ROM_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@
+#define C_CORDIC_ROTATE_ROM_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@
 
 #include <climits>
 #include <cmath>
@@ -30,29 +30,34 @@
 #include <ap_fixed.h>
 #include <ap_int.h>
 
-#include "RomGeneratorConst/RomGeneratorConst.hpp"
+#include "CCordicRotateRomTemplate.hpp"
+#include "CordicRoms/cordic_rom_@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@.hpp"
 
+#ifndef KN_STATIC_TABLE_DEFINED
+#define KN_STATIC_TABLE_DEFINED 1
 // ``` GNU Octave
 // kn_values(X) = prod(1 ./ abs(1 + 1j * 2.^ (-(0:X))))
 // ```
-static constexpr double kn_values[7] = {0.70710678118655, 0.632455532033680, 0.613571991077900, 0.608833912517750, 0.607648256256170, 0.607351770141300, 0.607277644093530};
+static constexpr double kn_values[7] = {
+    0.70710678118655, 0.632455532033680, 0.613571991077900,
+    0.608833912517750, 0.607648256256170, 0.607351770141300, 0.607277644093530};
+#endif // KN_STATIC_TABLE_DEFINED
 
-template <unsigned TIn_W, unsigned TIn_I, unsigned TNStages, unsigned Tq>
-class CCordicRotateRomHalfPi {
-    static_assert(TIn_W > 0, "Inputs can't be on zero bits.");
-    static_assert(TNStages < 8, "7 stages of CORDIC is the maximum supported.");
-    static_assert(TNStages > 1, "2 stages of CORDIC is the minimum.");
+template <unsigned TIn_I>
+class CCordicRotateRom<TIn_I, @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDIC_Q@> {
+    static_assert(@CORDIC_W@ > 0, "Inputs can't be on zero bits.");
+    static_assert(@CORDIC_STAGES@ < 8, "7 stages of CORDIC is the maximum supported.");
+    static_assert(@CORDIC_STAGES@ > 1, "2 stages of CORDIC is the minimum.");
 
 public:
-    static constexpr const CRomGeneratorConst<TIn_W, TNStages, Tq> & rom_cordic {};
+    static constexpr unsigned In_W      = @CORDIC_W@;
+    static constexpr unsigned In_I      = TIn_I;
+    static constexpr unsigned Out_W     = In_W + 2;
+    static constexpr unsigned Out_I     = In_I + 2;
+    static constexpr unsigned nb_stages = @CORDIC_STAGES@;
+    static constexpr unsigned q         = @CORDIC_Q@;
 
-    static constexpr unsigned In_W    = TIn_W;
-    static constexpr unsigned In_I    = TIn_I;
-    static constexpr unsigned Out_W   = In_W + 2;
-    static constexpr unsigned Out_I   = In_I + 2;
-    static constexpr unsigned NStages = TNStages;
-
-    static constexpr uint64_t kn_i             = uint64_t(kn_values[NStages - 1] * double(1U << 3)); // 3 bits are enough
+    static constexpr uint64_t kn_i             = uint64_t(kn_values[nb_stages - 1] * double(1U << 3)); // 3 bits are enough
     static constexpr uint64_t in_scale_factor  = uint64_t(1U << (In_W - In_I));
     static constexpr uint64_t out_scale_factor = uint64_t(1U << (Out_W - Out_I));
 
@@ -66,14 +71,14 @@ public:
         int64_t A = x_in.real();
         int64_t B = x_in.imag();
 
-        const uint8_t R    = rom_cordic.rom[counter];
+        const uint8_t R    = cordic_roms::@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@[counter];
         uint8_t       mask = 0x80;
         if ((R & mask) == mask) {
             A = -A;
             B = -B;
         }
 
-        for (uint8_t u = 1; u < NStages + 1; u++) {
+        for (uint8_t u = 1; u < nb_stages + 1; u++) {
             mask = mask >> 1;
 
             const int64_t Ri = (R & mask) == mask ? 1 : -1;
@@ -88,7 +93,7 @@ public:
 
 #ifndef __SYNTHESIS__
     static constexpr double scale_cordic(double in) {
-        return in * kn_values[NStages - 1];
+        return in * kn_values[nb_stages - 1];
     }
 
     static constexpr std::complex<double> cordic(std::complex<double> x_in,
@@ -112,14 +117,14 @@ public:
                        const ap_uint<8> & counter,
                        ap_int<Out_W> & re_out, ap_int<Out_W> & im_out) {
 
-        const ap_uint<6 + 1> R = (rom_cordic.rom[counter] >> (7 - NStages));
+        const ap_uint<nb_stages + 1> R = (cordic_roms::@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@[counter] >> (7 - nb_stages));
 
-        ap_int<Out_W> A = bool(R[NStages]) ? ap_int<In_W>(-re_in) : re_in;
-        ap_int<Out_W> B = bool(R[NStages]) ? ap_int<In_W>(-im_in) : im_in;
+        ap_int<Out_W> A = bool(R[nb_stages]) ? ap_int<In_W>(-re_in) : re_in;
+        ap_int<Out_W> B = bool(R[nb_stages]) ? ap_int<In_W>(-im_in) : im_in;
 
-        for (uint8_t u = 1; u < 6 + 1; u++) { // 6 stages
+        for (uint8_t u = 1; u < nb_stages + 1; u++) { // nb_stages stages
 
-            const bool Ri = bool(R[NStages - u]);
+            const bool Ri = bool(R[nb_stages - u]);
 
             // Results in (X / 2^(u - 1)), meaning only the
             // Out_W - u LSBs are meaninfull in shifted_X
@@ -146,49 +151,8 @@ public:
         re_out = A;
         im_out = B;
     }
+
+    constexpr CCordicRotateRom() = default;
 };
 
-#if 0
-template <>
-inline void CCordicRotateRomHalfPi<16, 4, 6, 64>::cordic(
-    const ap_int<16> & re_in, const ap_int<16> & im_in,
-    const ap_uint<8> & counter,
-    ap_int<Out_W> & re_out, ap_int<Out_W> & im_out) const {
-
-    const ap_uint<6 + 1> R = (rom_cordic.rom[counter.to_uint()] >> (7 - 6));
-
-    ap_int<Out_W> A = bool(R[6]) ? ap_int<16>(-re_in) : re_in;
-    ap_int<Out_W> B = bool(R[6]) ? ap_int<16>(-im_in) : im_in;
-
-    for (uint8_t u = 1; u < 6 + 1; u++) { // 6 stages
-
-        const bool Ri = bool(R[6 - u]);
-
-        // Results in (X / 2^(u - 1)), meaning only the
-        // Out_W - u LSBs are meaninfull in shifted_X
-        // Can't use range access since 11111111 (-1) would become 00001111 (15).
-        // Would be possible if the loop is manually unrolled, to predict bitsize,
-        // thus directly put 1111 into 4 bits (so still -1).
-        const ap_int<Out_W> shifted_A = A >> (u - 1); // A(Out_W - 1, u - 1);
-        const ap_int<Out_W> shifted_B = B >> (u - 1); // B(Out_W - 1, u - 1);
-
-        const ap_int<Out_W> arc_step_A
-            = Ri
-                ? ap_int<Out_W>(-shifted_A)
-                : shifted_A;
-        const ap_int<Out_W> arc_step_B
-            = Ri
-                ? shifted_B
-                : ap_int<Out_W>(-shifted_B);
-
-        const auto I = A + arc_step_B;
-        B            = B + arc_step_A;
-        A            = I;
-    }
-
-    re_out = A;
-    im_out = B;
-}
-#endif
-
-#endif // C_CORDIC_ROTATE_ROM_HALF_PI_HPP
+#endif // C_CORDIC_ROTATE_ROM_W_STAGES_Q

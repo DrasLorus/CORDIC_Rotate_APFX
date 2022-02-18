@@ -63,7 +63,7 @@ template <uint8_t N_STAGES,
           uint8_t OUT_W,
           uint8_t OUT_I,
           uint8_t ATAN_I>
-class CCordicRotate {
+class CCordicRotateSmart {
 public:
     static constexpr const CAtanLUT<N_STAGES, uint64_t, ATAN_I> & atanLUT = CAtanLUT<N_STAGES, uint64_t, ATAN_I>();
 
@@ -74,8 +74,8 @@ public:
         ap_fixed<OUT_W, OUT_I> &     fx_re_out,
         ap_fixed<OUT_W, OUT_I> &     fx_im_out);
 
-    CCordicRotate() {}
-    virtual ~CCordicRotate() {};
+    CCordicRotateSmart() {}
+    virtual ~CCordicRotateSmart() {};
 };
 
 #endif

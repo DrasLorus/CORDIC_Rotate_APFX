@@ -99,7 +99,7 @@ public:
 };
 
 template <unsigned In_W, unsigned NStages, unsigned Tq>
-void generate_rom_header_mc(const char * filename = "rom_cordic.h") {
+void generate_rom_header_mc(const char * filename) {
     const CRomGeneratorMCHalfPi<In_W, NStages, Tq> rom;
 
     FILE * rom_file = fopen(filename, "w");
@@ -108,9 +108,17 @@ void generate_rom_header_mc(const char * filename = "rom_cordic.h") {
         exit(EXIT_FAILURE);
     }
 
-    // fprintf(rom_file, "#ifndef ROM_CORDIC\n#define ROM_CORDIC\n\n");
+    char upper_file_def[64];
+    snprintf(upper_file_def, 64, "CORDIC_ROMS_MC_%u_%u_%u", In_W, NStages, Tq);
 
-    fprintf(rom_file, "constexpr uint8_t rom_cordic[%d] = {\n  ", rom.max_length);
+    char rom_name[64];
+    snprintf(rom_name, 64, "mc_%u_%u_%u", In_W, NStages, Tq);
+
+    fprintf(rom_file, "#ifndef %s\n#define %s\n\n", upper_file_def, upper_file_def);
+    fprintf(rom_file, "#include <cstdint>\n\n");
+    fprintf(rom_file, "namespace cordic_roms {\n");
+
+    fprintf(rom_file, "constexpr uint8_t %s[%d] = {\n  ", rom_name, rom.max_length);
     for (uint16_t u = 0; u < rom.max_length - 1; u++) {
         if (((u & 7) == 0) && u != 0) {
             fprintf(rom_file, "\n  ");
@@ -119,11 +127,12 @@ void generate_rom_header_mc(const char * filename = "rom_cordic.h") {
     }
     fprintf(rom_file, "%3d};\n", uint16_t(rom.rom[rom.max_length - 1]));
 
-    // fprintf(rom_file, "#endif // ROM_CORDIC");
+    fprintf(rom_file, "\n} // namespace cordic_roms\n\n");
+    fprintf(rom_file, "#endif // %s\n\n", upper_file_def);
 }
 
 template <unsigned In_W, unsigned NStages, unsigned Tq>
-void generate_rom_header_mc_raw(const char * filename = "rom_cordic.txt") {
+void generate_rom_header_mc_raw(const char * filename) {
     const CRomGeneratorMCHalfPi<In_W, NStages, Tq> rom;
 
     FILE * rom_file = fopen(filename, "w");

@@ -15,31 +15,62 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.16.0 FATAL_ERROR)
 # setting this is required
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
+set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set (CMAKE_CXX_EXTENSIONS OFF)
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../lib)
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../lib)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS true)
+set (CMAKE_EXPORT_COMPILE_COMMANDS true)
 
-project(
+project (
   CordicRomGenerator
   LANGUAGES CXX
-  VERSION 0.1)
+  VERSION 0.1
+)
 
-add_library(romgen sources/RomGeneratorMCHalfPi/RomGeneratorMCHalfPi.cpp
-                   sources/RomGeneratorConst/RomGeneratorConst.cpp)
-target_include_directories(romgen PUBLIC sources)
+add_library (
+  romgen sources/RomGeneratorMCHalfPi/RomGeneratorMCHalfPi.cpp
+         sources/RomGeneratorConst/RomGeneratorConst.cpp
+)
+target_include_directories (romgen PUBLIC sources)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL
-                                        "RelWithDebInfo")
-  target_compile_definitions(romgen PRIVATE DEBUG=1)
-else()
-  target_compile_definitions(romgen PRIVATE NDEBUG=1)
-endif()
+if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  target_compile_definitions (romgen PRIVATE DEBUG=1)
+else ()
+  target_compile_definitions (romgen PRIVATE NDEBUG=1)
+endif ()
 
-add_executable(rom_generator sources/main.cpp)
-target_link_libraries(rom_generator PUBLIC romgen)
+add_executable (rom_generator_legacy sources/main_legacy.cpp)
+target_link_libraries (rom_generator_legacy PUBLIC romgen)
+
+set (
+  ROM_TYPE
+  "mc"
+  CACHE STRING "RomGenerator to use, either 'mc' or 'const'."
+)
+set (
+  CORDIC_W
+  "16"
+  CACHE STRING "bit length of the CORDIC input."
+)
+set (
+  CORDIC_STAGES
+  "6"
+  CACHE STRING "number of CORDIC stages."
+)
+set (
+  CORDIC_Q
+  "64"
+  CACHE STRING "number of rotation divisions."
+)
+
+configure_file (
+  sources/main_generator.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/sources/main_generator.cpp @ONLY
+)
+add_executable (rom_generator sources/main_generator.cpp)
+target_link_libraries (rom_generator PUBLIC romgen)

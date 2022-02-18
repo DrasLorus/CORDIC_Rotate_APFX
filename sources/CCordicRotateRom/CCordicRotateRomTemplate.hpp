@@ -17,4 +17,19 @@
  *
  */
 
-#include "CCordicRotateHalfPiRom.hpp"
+#ifndef C_CORDIC_ROTATE_ROM_TEMPLATE
+#define C_CORDIC_ROTATE_ROM_TEMPLATE
+
+enum rom_types {
+    mc,
+    cst
+};
+
+template <unsigned TIn_I, rom_types type, unsigned TIn_W, unsigned Tnb_stages, unsigned Tq>
+class CCordicRotateRom {
+    static_assert(TIn_W > 0, "Inputs can't be on zero bits.");
+    static_assert(Tnb_stages < 8, "7 stages of CORDIC is the maximum supported.");
+    static_assert(Tnb_stages > 1, "2 stages of CORDIC is the minimum.");
+};
+
+#endif // C_CORDIC_ROTATE_ROM_TEMPLATE

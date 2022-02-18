@@ -1,0 +1,1 @@
+#include "CCordicRotateRom/CCordicRotateRom_@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@.hpp"

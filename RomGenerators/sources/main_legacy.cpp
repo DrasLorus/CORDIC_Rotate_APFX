@@ -145,27 +145,27 @@ int main(int argc, char * argv[]) {
         } else {
             switch (stages) {
                 case 2:
-                    generate_rom_header_const_raw<16, 2, 64>("rom_cordic_const_W16_S2_Q64.txt");
+                    generate_rom_header_cst_raw<16, 2, 64>("rom_cordic_const_W16_S2_Q64.txt");
                     checkConst<2>();
                     break;
                 case 3:
-                    generate_rom_header_const_raw<16, 3, 64>("rom_cordic_const_W16_S3_Q64.txt");
+                    generate_rom_header_cst_raw<16, 3, 64>("rom_cordic_const_W16_S3_Q64.txt");
                     checkConst<3>();
                     break;
                 case 4:
-                    generate_rom_header_const_raw<16, 4, 64>("rom_cordic_const_W16_S4_Q64.txt");
+                    generate_rom_header_cst_raw<16, 4, 64>("rom_cordic_const_W16_S4_Q64.txt");
                     checkConst<4>();
                     break;
                 case 5:
-                    generate_rom_header_const_raw<16, 5, 64>("rom_cordic_const_W16_S5_Q64.txt");
+                    generate_rom_header_cst_raw<16, 5, 64>("rom_cordic_const_W16_S5_Q64.txt");
                     checkConst<5>();
                     break;
                 case 6:
-                    generate_rom_header_const_raw<16, 6, 64>("rom_cordic_const_W16_S6_Q64.txt");
+                    generate_rom_header_cst_raw<16, 6, 64>("rom_cordic_const_W16_S6_Q64.txt");
                     checkConst<6>();
                     break;
                 case 7:
-                    generate_rom_header_const_raw<16, 7, 64>("rom_cordic_const_W16_S7_Q64.txt");
+                    generate_rom_header_cst_raw<16, 7, 64>("rom_cordic_const_W16_S7_Q64.txt");
                     checkConst<7>();
                     break;
                 default:
@@ -208,27 +208,27 @@ int main(int argc, char * argv[]) {
         } else {
             switch (stages) {
                 case 2:
-                    generate_rom_header_const<16, 2, 64>("rom_cordic_const_W16_S2_Q64.hpp");
+                    generate_rom_header_cst<16, 2, 64>("rom_cordic_const_W16_S2_Q64.hpp");
                     checkConst<2>();
                     break;
                 case 3:
-                    generate_rom_header_const<16, 3, 64>("rom_cordic_const_W16_S3_Q64.hpp");
+                    generate_rom_header_cst<16, 3, 64>("rom_cordic_const_W16_S3_Q64.hpp");
                     checkConst<3>();
                     break;
                 case 4:
-                    generate_rom_header_const<16, 4, 64>("rom_cordic_const_W16_S4_Q64.hpp");
+                    generate_rom_header_cst<16, 4, 64>("rom_cordic_const_W16_S4_Q64.hpp");
                     checkConst<4>();
                     break;
                 case 5:
-                    generate_rom_header_const<16, 5, 64>("rom_cordic_const_W16_S5_Q64.hpp");
+                    generate_rom_header_cst<16, 5, 64>("rom_cordic_const_W16_S5_Q64.hpp");
                     checkConst<5>();
                     break;
                 case 6:
-                    generate_rom_header_const<16, 6, 64>("rom_cordic_const_W16_S6_Q64.hpp");
+                    generate_rom_header_cst<16, 6, 64>("rom_cordic_const_W16_S6_Q64.hpp");
                     checkConst<6>();
                     break;
                 case 7:
-                    generate_rom_header_const<16, 7, 64>("rom_cordic_const_W16_S7_Q64.hpp");
+                    generate_rom_header_cst<16, 7, 64>("rom_cordic_const_W16_S7_Q64.hpp");
                     checkConst<7>();
                     break;
                 default:
