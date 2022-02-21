@@ -5,6 +5,7 @@ lib
 bin
 compile_commands.json
 *octave-workspace
+.vscode
 
 sources/CCordicRotateRom/CCordicRotateRom_*.?pp
 sources/CordicRoms/cordic_rom_*.?pp
