@@ -28,7 +28,7 @@
 
 #include <cassert>
 
-template <unsigned In_W, unsigned NStages, unsigned Tq>
+template <unsigned In_W, unsigned NStages, unsigned Tq, unsigned divider = 2>
 class CRomGeneratorConst {
     static_assert(In_W > 0, "Inputs can't be on zero bits.");
     static_assert(NStages < 8, "7 stages of CORDIC is the maximum supported.");
@@ -38,10 +38,10 @@ public:
     static constexpr double   pi           = 3.14159265358979323846;
     static constexpr double   two_pi       = 2 * pi;
     static constexpr double   half_pi      = pi * 0.5;
-    static constexpr double   rotation     = half_pi;
+    static constexpr double   rotation     = pi / divider;
     static constexpr double   q            = Tq;
-    static constexpr uint32_t max_length   = 4 * Tq;                    // 2pi / (pi / 2) * q
-    static constexpr int64_t  scale_factor = int64_t(1U << (In_W - 1)); // 2pi / (pi / 2) * q
+    static constexpr uint32_t max_length   = 2 * divider * Tq; // 2pi / (pi / divider) * q
+    static constexpr int64_t  scale_factor = int64_t(1U << (In_W - 1)); 
 
     static constexpr double atanDbl[28] {
         0.78539816339745, 0.46364760900081, 0.24497866312686, 0.12435499454676,

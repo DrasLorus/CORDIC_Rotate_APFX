@@ -32,7 +32,7 @@
 
 #include "RomGeneratorConst/RomGeneratorConst.hpp"
 
-template <unsigned TIn_W, unsigned TIn_I, unsigned Tnb_stages, unsigned Tq>
+template <unsigned TIn_W, unsigned TIn_I, unsigned Tnb_stages, unsigned Tq, unsigned divider = 2>
 class CCordicRotateConstexpr {
     static_assert(TIn_W > 0, "Inputs can't be on zero bits.");
     static_assert(Tnb_stages < 8, "7 stages of CORDIC is the maximum supported.");
@@ -45,7 +45,7 @@ public:
     static constexpr double kn_values[7] = {
         0.70710678118655, 0.632455532033680, 0.613571991077900,
         0.608833912517750, 0.607648256256170, 0.607351770141300, 0.607277644093530};
-    static constexpr const CRomGeneratorConst<TIn_W, Tnb_stages, Tq> & rom_cordic {};
+    static constexpr const CRomGeneratorConst<TIn_W, Tnb_stages, Tq, divider> & rom_cordic {};
 
     static constexpr unsigned In_W      = TIn_W;
     static constexpr unsigned In_I      = TIn_I;

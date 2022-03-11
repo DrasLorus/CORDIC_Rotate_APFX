@@ -17,8 +17,8 @@
  *
  */
 
-#include "CCordicRotateSmart/CCordicRotateSmart.hpp"
 #include "CCordicRotateConstexpr/CCordicRotateConstexpr.hpp"
+#include "CCordicRotateSmart/CCordicRotateSmart.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -66,7 +66,7 @@ TEST_CASE("Adaptive CORDIC work as intended", "[!hide][WIP]") {
     RESULTS.close();
 
     // Save the results to a file
-    FILE.open("results.dat");
+    // FILE.open("results.dat");
 
     // Executing the encoder
     for (unsigned iter = 0; iter < n_lines; iter++) {
@@ -80,22 +80,22 @@ TEST_CASE("Adaptive CORDIC work as intended", "[!hide][WIP]") {
         // cout << "Series " << iter;
         // cout << " Outcome: ";
 
-        FILE << values_re_out[iter].to_float() << ", " << values_re_out[iter].to_float() << endl;
+        // FILE << values_re_out[iter].to_float() << ", " << values_re_out[iter].to_float() << endl;
 
         REQUIRE_THAT(values_re_out[iter].to_float(), WithinAbsMatcher(exp_re_out[iter], 0.079997558593750));
         REQUIRE_THAT(values_im_out[iter].to_float(), WithinAbsMatcher(exp_im_out[iter], 0.079997558593750));
     }
-    FILE.close();
+    // FILE.close();
 
     // Compare the results file with the golden results
     // int retval = 0;
     // Return 0 if the test passed
 }
 
-typedef CCordicRotateConstexpr<16, 4, 6, 64> cordic_rom;
-
 TEST_CASE("ROM-based Cordic works with C-Types", "[CORDIC]") {
     SECTION("W:16 - I:4 - Stages:6 - q:64") {
+        typedef CCordicRotateConstexpr<16, 4, 6, 64> cordic_rom;
+
         static constexpr cordic_rom cordic {};
 
         string input_fn  = "../data/input.dat";  // _8_14_4_17_5_19_7_12
@@ -108,7 +108,7 @@ TEST_CASE("ROM-based Cordic works with C-Types", "[CORDIC]") {
 
         complex<double> results[n_lines];
 
-        ofstream FILE;
+        // ofstream FILE;
 
         ifstream INPUT(input_fn);
 
@@ -130,9 +130,9 @@ TEST_CASE("ROM-based Cordic works with C-Types", "[CORDIC]") {
         INPUT.close();
 
         // Save the results to a file
-        FILE.open("results.dat");
+        // FILE.open("results.dat");
 
-        constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
+        constexpr double abs_margin = double(1 << (cordic.Out_I - 1)) * 2. / 100.;
 
         // Executing the encoder
         for (unsigned iter = 0; iter < n_lines; iter++) {
@@ -144,12 +144,12 @@ TEST_CASE("ROM-based Cordic works with C-Types", "[CORDIC]") {
             // cout << "Series " << iter;
             // cout << " Outcome: ";
 
-            FILE << values_out[iter].real() << " " << values_out[iter].imag() << " " << results[iter].real() << " " << results[iter].imag() << endl;
+            // FILE << values_out[iter].real() << " " << values_out[iter].imag() << " " << results[iter].real() << " " << results[iter].imag() << endl;
 
             REQUIRE_THAT(values_out[iter].real(), WithinAbsMatcher(results[iter].real(), abs_margin));
             REQUIRE_THAT(values_out[iter].imag(), WithinAbsMatcher(results[iter].imag(), abs_margin));
         }
-        FILE.close();
+        // FILE.close();
 
         // Compare the results file with the golden results
         // int retval = 0;
@@ -161,6 +161,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
     constexpr unsigned n_lines = 100000;
 
     SECTION("W:16 - I:4 - Stages:6 - q:64") {
+        typedef CCordicRotateConstexpr<16, 4, 6, 64> cordic_rom;
 
         static constexpr cordic_rom cordic {};
 
@@ -181,7 +182,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         double results_re[n_lines];
         double results_im[n_lines];
 
-        ofstream out_stream;
+        // ofstream out_stream;
 
         ifstream INPUT(input_fn);
 
@@ -202,10 +203,10 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         INPUT.close();
 
         // Save the results to a file
-        out_stream.open("results_ap.dat");
+        // out_stream.open("results_ap.dat");
         // FILE * romf = fopen("rom.dat", "w");
 
-        constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
+        constexpr double abs_margin = double(1 << (cordic.Out_I - 1)) * 2. / 100.;
 
         // Executing the encoder
         for (unsigned iter = 0; iter < n_lines; iter++) {
@@ -224,12 +225,12 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             // cout << "Series " << iter;
             // cout << " Outcome: ";
 
-            out_stream << values_re_out[iter].to_int64() << " " << values_im_out[iter].to_int64() << " " << results_re[iter] << " " << results_im[iter] << endl;
+            // out_stream << values_re_out[iter].to_int64() << " " << values_im_out[iter].to_int64() << " " << results_re[iter] << " " << results_im[iter] << endl;
 
             REQUIRE_THAT(values_re_out[iter].to_double() * 5. / 8. / cordic_rom::out_scale_factor, WithinAbsMatcher(results_re[iter], abs_margin));
             REQUIRE_THAT(values_im_out[iter].to_double() * 5. / 8. / cordic_rom::out_scale_factor, WithinAbsMatcher(results_im[iter], abs_margin));
         }
-        out_stream.close();
+        // out_stream.close();
         // fclose(romf);
 
         // Compare the results file with the golden results
@@ -238,8 +239,167 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
     }
 
     SECTION("W:16 - I:4 - Stages:6 - q:64 - internal scaling") {
-        // typedef CCordicRotateRomHalfPi<16, 4, 6, 64> cordic_rom;
+        typedef CCordicRotateConstexpr<16, 4, 6, 64> cordic_rom;
+        static constexpr cordic_rom                  cordic {};
+
+        string input_fn = "../data/input.dat";
+
+        constexpr double   rotation = cordic_rom::rom_cordic.rotation;
+        constexpr double   q        = cordic_rom::rom_cordic.q;
+        constexpr uint64_t cnt_mask = 0xFF; // Value dependant of the way the ROM is initialized
+
+        constexpr unsigned Out_W = cordic_rom::Out_W;
+        constexpr unsigned In_W  = cordic_rom::In_W;
+
+        ap_int<In_W>  values_re_in[n_lines];
+        ap_int<In_W>  values_im_in[n_lines];
+        ap_int<Out_W> values_re_out[n_lines];
+        ap_int<Out_W> values_im_out[n_lines];
+
+        double results_re[n_lines];
+        double results_im[n_lines];
+
+        // ofstream out_stream;
+
+        ifstream INPUT(input_fn);
+
+        // Init test vector
+        for (unsigned i = 0; i < n_lines; i++) {
+            double a, b, r;
+            INPUT >> a >> b >> r;
+
+            const complex<double> c {a, b};
+            values_re_in[i] = int64_t(a * double(cordic_rom::in_scale_factor));
+            values_im_in[i] = int64_t(b * double(cordic_rom::in_scale_factor));
+
+            const complex<double> e = c * exp(complex<double>(0., rotation / q * (i & cnt_mask)));
+            results_re[i]           = e.real();
+            results_im[i]           = e.imag();
+        }
+
+        INPUT.close();
+
+        // Save the results to a file
+        // out_stream.open("results_ap.dat");
+        // FILE * romf = fopen("rom.dat", "w");
+
+        constexpr double abs_margin = double(1 << (cordic.Out_I - 1)) * 3. / 100.; // Internal scaling create noise
+
+        // Executing the encoder
+        for (unsigned iter = 0; iter < n_lines; iter++) {
+            // Execute
+            const uint8_t counter = uint8_t(iter & cnt_mask);
+
+            // if (iter < cnt_mask + 1)
+            //     fprintf(romf, "%03d\n", (uint16_t) cordic.rom_cordic.rom[counter]);
+
+            cordic_rom::cordic(
+                values_re_in[iter], values_im_in[iter],
+                counter,
+                values_re_out[iter], values_im_out[iter]);
+
+            // Display the results
+            // cout << "Series " << iter;
+            // cout << " Outcome: ";
+
+            // out_stream << values_re_out[iter].to_int64() << " " << values_im_out[iter].to_int64() << " " << results_re[iter] << " " << results_im[iter] << endl;
+
+            REQUIRE_THAT(cordic_rom::scale_cordic<Out_W>(values_re_out[iter]).to_double() / cordic_rom::out_scale_factor,
+                         WithinAbsMatcher(results_re[iter],
+                                          abs_margin));
+            REQUIRE_THAT(cordic_rom::scale_cordic<Out_W>(values_im_out[iter]).to_double() / cordic_rom::out_scale_factor,
+                         WithinAbsMatcher(results_im[iter],
+                                          abs_margin));
+        }
+        // out_stream.close();
+        // fclose(romf);
+
+        // Compare the results file with the golden results
+        // int retval = 0;
+        // Return 0 if the test passed
+    }
+
+    SECTION("W:16 - I:4 - Stages:6 - q:64 - divider:4") {
+        typedef CCordicRotateConstexpr<16, 4, 6, 64, 4> cordic_rom;
+
         static constexpr cordic_rom cordic {};
+
+        string input_fn = "../data/input.dat";
+
+        constexpr double   rotation = cordic_rom::rom_cordic.rotation;
+        constexpr double   q        = cordic_rom::rom_cordic.q;
+        constexpr uint64_t cnt_mask = 0xFF; // Value dependant of the way the ROM is initialized
+
+        constexpr unsigned Out_W = cordic_rom::Out_W;
+        constexpr unsigned In_W  = cordic_rom::In_W;
+
+        ap_int<In_W>  values_re_in[n_lines];
+        ap_int<In_W>  values_im_in[n_lines];
+        ap_int<Out_W> values_re_out[n_lines];
+        ap_int<Out_W> values_im_out[n_lines];
+
+        double results_re[n_lines];
+        double results_im[n_lines];
+
+        // ofstream out_stream;
+
+        ifstream INPUT(input_fn);
+
+        // Init test vector
+        for (unsigned i = 0; i < n_lines; i++) {
+            double a, b, r;
+            INPUT >> a >> b >> r;
+
+            const complex<double> c {a, b};
+            values_re_in[i] = int64_t(a * double(cordic_rom::in_scale_factor));
+            values_im_in[i] = int64_t(b * double(cordic_rom::in_scale_factor));
+
+            const complex<double> e = c * exp(complex<double>(0., rotation / q * (i & cnt_mask)));
+            results_re[i]           = e.real();
+            results_im[i]           = e.imag();
+        }
+
+        INPUT.close();
+
+        // Save the results to a file
+        // out_stream.open("results_ap.dat");
+        // FILE * romf = fopen("rom.dat", "w");
+
+        constexpr double abs_margin = double(1 << (cordic.Out_I - 1)) * 2. / 100.;
+
+        // Executing the encoder
+        for (unsigned iter = 0; iter < n_lines; iter++) {
+            // Execute
+            const uint8_t counter = uint8_t(iter & cnt_mask);
+
+            // if (iter < cnt_mask + 1)
+            //     fprintf(romf, "%03d\n", (uint16_t) cordic.rom_cordic.rom[counter]);
+
+            cordic_rom::cordic(
+                values_re_in[iter], values_im_in[iter],
+                counter,
+                values_re_out[iter], values_im_out[iter]);
+
+            // Display the results
+            // cout << "Series " << iter;
+            // cout << " Outcome: ";
+
+            // out_stream << values_re_out[iter].to_int64() << " " << values_im_out[iter].to_int64() << " " << results_re[iter] << " " << results_im[iter] << endl;
+
+            REQUIRE_THAT(values_re_out[iter].to_double() * 5. / 8. / cordic_rom::out_scale_factor, WithinAbsMatcher(results_re[iter], abs_margin));
+            REQUIRE_THAT(values_im_out[iter].to_double() * 5. / 8. / cordic_rom::out_scale_factor, WithinAbsMatcher(results_im[iter], abs_margin));
+        }
+        // out_stream.close();
+        // fclose(romf);
+
+        // Compare the results file with the golden results
+        // int retval = 0;
+        // Return 0 if the test passed
+    }
+
+    SECTION("W:16 - I:4 - Stages:6 - q:64 - divider:4 - internal scaling") {
+        typedef CCordicRotateConstexpr<16, 4, 7, 64, 4> cordic_rom;
+        static constexpr cordic_rom                     cordic {};
 
         string input_fn = "../data/input.dat";
 
@@ -279,10 +439,10 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         INPUT.close();
 
         // Save the results to a file
-        out_stream.open("results_ap.dat");
+        // out_stream.open("results_ap.dat");
         // FILE * romf = fopen("rom.dat", "w");
 
-        constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
+        constexpr double abs_margin = double(1 << (cordic.Out_I - 1)) * 3. / 100.; // Internal scaling creates noise
 
         // Executing the encoder
         for (unsigned iter = 0; iter < n_lines; iter++) {
@@ -301,16 +461,17 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             // cout << "Series " << iter;
             // cout << " Outcome: ";
 
-            out_stream << values_re_out[iter].to_int64() << " " << values_im_out[iter].to_int64() << " " << results_re[iter] << " " << results_im[iter] << endl;
+            // out_stream << cordic_rom::scale_cordic<Out_W>(values_re_out[iter]).to_double() / cordic_rom::out_scale_factor << " "
+            //            << cordic_rom::scale_cordic<Out_W>(values_im_out[iter]).to_double() / cordic_rom::out_scale_factor << " "
+            //            << results_re[iter] << " "
+            //            << results_im[iter] << endl;
 
             REQUIRE_THAT(cordic_rom::scale_cordic<Out_W>(values_re_out[iter]).to_double() / cordic_rom::out_scale_factor,
-                         WithinAbsMatcher(results_re[iter],
-                                          abs_margin));
+                         WithinAbsMatcher(results_re[iter], abs_margin));
             REQUIRE_THAT(cordic_rom::scale_cordic<Out_W>(values_im_out[iter]).to_double() / cordic_rom::out_scale_factor,
-                         WithinAbsMatcher(results_im[iter],
-                                          abs_margin));
+                         WithinAbsMatcher(results_im[iter], abs_margin));
         }
-        out_stream.close();
+        // out_stream.close();
         // fclose(romf);
 
         // Compare the results file with the golden results
@@ -321,6 +482,20 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
 TEST_CASE("ROM-based Cordic constexpr are evaluated during compilation.", "[CORDIC]") {
     SECTION("W:16 - I:4 - Stages:6 - q:64 - C-Types") {
+        typedef CCordicRotateConstexpr<16, 4, 6, 64> cordic_rom;
+
+        constexpr complex<int64_t> value_in = (1U << 12) * 97;
+        constexpr uint8_t          angle    = 169;
+
+        constexpr complex<int64_t> res1 = cordic_rom::cordic(value_in, angle);
+        constexpr complex<int64_t> res2 = cordic_rom::cordic(value_in, angle);
+        static_assert(res1 == res2, "Test");
+        REQUIRE_FALSE(res1 == cordic_rom::cordic(complex<int64_t>(1, 0), angle));
+        REQUIRE(res1 == cordic_rom::cordic(value_in, angle));
+    }
+
+    SECTION("W:16 - I:4 - Stages:6 - q:64 - divider:4 - C-Types") {
+        typedef CCordicRotateConstexpr<16, 4, 6, 64, 4> cordic_rom;
 
         constexpr complex<int64_t> value_in = (1U << 12) * 97;
         constexpr uint8_t          angle    = 169;

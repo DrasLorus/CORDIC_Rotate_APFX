@@ -44,7 +44,7 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
 
         complex<double> results[n_lines];
 
-        ofstream FILE;
+        // ofstream FILE;
 
         ifstream INPUT(input_fn);
 
@@ -66,7 +66,7 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
         INPUT.close();
 
         // Save the results to a file
-        FILE.open("results.dat");
+        // FILE.open("results.dat");
 
         constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
 
@@ -80,12 +80,12 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
             // cout << "Series " << iter;
             // cout << " Outcome: ";
 
-            FILE << values_out[iter].real() << " " << values_out[iter].imag() << " " << results[iter].real() << " " << results[iter].imag() << endl;
+            // FILE << values_out[iter].real() << " " << values_out[iter].imag() << " " << results[iter].real() << " " << results[iter].imag() << endl;
 
             REQUIRE_THAT(values_out[iter].real(), WithinAbsMatcher(results[iter].real(), abs_margin));
             REQUIRE_THAT(values_out[iter].imag(), WithinAbsMatcher(results[iter].imag(), abs_margin));
         }
-        FILE.close();
+        // FILE.close();
 
         // Compare the results file with the golden results
         // int retval = 0;
@@ -117,7 +117,7 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
         double results_re[n_lines];
         double results_im[n_lines];
 
-        ofstream out_stream;
+        // ofstream out_stream;
 
         ifstream INPUT(input_fn);
 
@@ -138,7 +138,7 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
         INPUT.close();
 
         // Save the results to a file
-        out_stream.open("results_ap.dat");
+        // out_stream.open("results_ap.dat");
         // FILE * romf = fopen("rom.dat", "w");
 
         constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
@@ -160,12 +160,12 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
             // cout << "Series " << iter;
             // cout << " Outcome: ";
 
-            out_stream << values_re_out[iter].to_int64() << " " << values_im_out[iter].to_int64() << " " << results_re[iter] << " " << results_im[iter] << endl;
+            // out_stream << values_re_out[iter].to_int64() << " " << values_im_out[iter].to_int64() << " " << results_re[iter] << " " << results_im[iter] << endl;
 
             REQUIRE_THAT(values_re_out[iter].to_double() * 5. / 8. / cordic_rom::out_scale_factor, WithinAbsMatcher(results_re[iter], abs_margin));
             REQUIRE_THAT(values_im_out[iter].to_double() * 5. / 8. / cordic_rom::out_scale_factor, WithinAbsMatcher(results_im[iter], abs_margin));
         }
-        out_stream.close();
+        // out_stream.close();
         // fclose(romf);
 
         // Compare the results file with the golden results
@@ -214,7 +214,7 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
         INPUT.close();
 
         // Save the results to a file
-        out_stream.open("results_ap.dat");
+        // out_stream.open("results_ap.dat");
         // FILE * romf = fopen("rom.dat", "w");
 
         constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
@@ -236,7 +236,7 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
             // cout << "Series " << iter;
             // cout << " Outcome: ";
 
-            out_stream << values_re_out[iter].to_int64() << " " << values_im_out[iter].to_int64() << " " << results_re[iter] << " " << results_im[iter] << endl;
+            // out_stream << values_re_out[iter].to_int64() << " " << values_im_out[iter].to_int64() << " " << results_re[iter] << " " << results_im[iter] << endl;
 
             REQUIRE_THAT(cordic_rom::scale_cordic<Out_W>(values_re_out[iter]).to_double() / cordic_rom::out_scale_factor,
                          WithinAbsMatcher(results_re[iter],
@@ -245,7 +245,7 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
                          WithinAbsMatcher(results_im[iter],
                                           abs_margin));
         }
-        out_stream.close();
+        // out_stream.close();
         // fclose(romf);
 
         // Compare the results file with the golden results
