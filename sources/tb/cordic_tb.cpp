@@ -167,7 +167,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
         string input_fn = "../data/input.dat";
 
-        constexpr double   rotation = cordic_rom::rom_cordic.rotation;
+        constexpr double   rotation = cordic_rom::rotation;
         constexpr double   q        = cordic_rom::rom_cordic.q;
         constexpr uint64_t cnt_mask = 0xFF; // Value dependant of the way the ROM is initialized
 
@@ -244,7 +244,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
         string input_fn = "../data/input.dat";
 
-        constexpr double   rotation = cordic_rom::rom_cordic.rotation;
+        constexpr double   rotation = cordic_rom::rotation;
         constexpr double   q        = cordic_rom::rom_cordic.q;
         constexpr uint64_t cnt_mask = 0xFF; // Value dependant of the way the ROM is initialized
 
@@ -304,10 +304,10 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
             // out_stream << values_re_out[iter].to_int64() << " " << values_im_out[iter].to_int64() << " " << results_re[iter] << " " << results_im[iter] << endl;
 
-            REQUIRE_THAT(cordic_rom::scale_cordic<Out_W>(values_re_out[iter]).to_double() / cordic_rom::out_scale_factor,
+            REQUIRE_THAT(cordic_rom::scale_cordic(values_re_out[iter]).to_double() / cordic_rom::out_scale_factor,
                          WithinAbsMatcher(results_re[iter],
                                           abs_margin));
-            REQUIRE_THAT(cordic_rom::scale_cordic<Out_W>(values_im_out[iter]).to_double() / cordic_rom::out_scale_factor,
+            REQUIRE_THAT(cordic_rom::scale_cordic(values_im_out[iter]).to_double() / cordic_rom::out_scale_factor,
                          WithinAbsMatcher(results_im[iter],
                                           abs_margin));
         }
@@ -326,7 +326,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
         string input_fn = "../data/input.dat";
 
-        constexpr double   rotation = cordic_rom::rom_cordic.rotation;
+        constexpr double   rotation = cordic_rom::rotation;
         constexpr double   q        = cordic_rom::rom_cordic.q;
         constexpr uint64_t cnt_mask = 0xFF; // Value dependant of the way the ROM is initialized
 
@@ -403,7 +403,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
         string input_fn = "../data/input.dat";
 
-        constexpr double   rotation = cordic_rom::rom_cordic.rotation;
+        constexpr double   rotation = cordic_rom::rotation;
         constexpr double   q        = cordic_rom::rom_cordic.q;
         constexpr uint64_t cnt_mask = 0xFF; // Value dependant of the way the ROM is initialized
 
@@ -461,14 +461,14 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             // cout << "Series " << iter;
             // cout << " Outcome: ";
 
-            // out_stream << cordic_rom::scale_cordic<Out_W>(values_re_out[iter]).to_double() / cordic_rom::out_scale_factor << " "
-            //            << cordic_rom::scale_cordic<Out_W>(values_im_out[iter]).to_double() / cordic_rom::out_scale_factor << " "
+            // out_stream << cordic_rom::scale_cordic(values_re_out[iter]).to_double() / cordic_rom::out_scale_factor << " "
+            //            << cordic_rom::scale_cordic(values_im_out[iter]).to_double() / cordic_rom::out_scale_factor << " "
             //            << results_re[iter] << " "
             //            << results_im[iter] << endl;
 
-            REQUIRE_THAT(cordic_rom::scale_cordic<Out_W>(values_re_out[iter]).to_double() / cordic_rom::out_scale_factor,
+            REQUIRE_THAT(cordic_rom::scale_cordic(values_re_out[iter]).to_double() / cordic_rom::out_scale_factor,
                          WithinAbsMatcher(results_re[iter], abs_margin));
-            REQUIRE_THAT(cordic_rom::scale_cordic<Out_W>(values_im_out[iter]).to_double() / cordic_rom::out_scale_factor,
+            REQUIRE_THAT(cordic_rom::scale_cordic(values_im_out[iter]).to_double() / cordic_rom::out_scale_factor,
                          WithinAbsMatcher(results_im[iter], abs_margin));
         }
         // out_stream.close();

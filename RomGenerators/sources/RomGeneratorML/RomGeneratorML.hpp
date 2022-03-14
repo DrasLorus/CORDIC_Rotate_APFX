@@ -17,43 +17,44 @@
  *
  */
 
-#ifndef _ROM_GENERATOR_MC_HALF_PI
-#define _ROM_GENERATOR_MC_HALF_PI
+#ifndef _ROM_GENERATOR_ML
+#define _ROM_GENERATOR_ML
 
 #include <climits>
 #include <cmath>
 #include <complex>
 #include <cstdint>
 
-template <unsigned In_W, unsigned NStages, unsigned Tq>
-class CRomGeneratorMCHalfPi {
+template <unsigned In_W, unsigned NStages, unsigned Tq, unsigned divider = 2>
+class CRomGeneratorML {
     static_assert(In_W > 0, "Inputs can't be on zero bits.");
     static_assert(NStages < 8, "7 stages of CORDIC is the maximum supported.");
     static_assert(NStages > 1, "2 stages of CORDIC is the minimum.");
     static_assert(NStages > 1, "2 stages of CORDIC is the minimum.");
+    static_assert(((divider - 1) & divider) == 0, "divider must be a power of 2.");
 
 public:
-    static constexpr double   rotation     = M_PI_2;
+    static constexpr double   rotation     = M_PI / divider;
     static constexpr double   q            = Tq;
-    static constexpr uint32_t max_length   = 4 * Tq;                    // 2pi / (pi / 2) * q
-    static constexpr int64_t  scale_factor = int64_t(1U << (In_W - 1)); // 2pi / (pi / 2) * q
+    static constexpr uint32_t max_length   = 2 * divider * Tq; // 2pi / (pi / divider) * q
+    static constexpr int64_t  scale_factor = int64_t(1U << (In_W - 1));
 
 private:
-    constexpr std::complex<int64_t> cordic_MC(const std::complex<int64_t> & x_in,
+    constexpr std::complex<int64_t> cordic_ML(const std::complex<int64_t> & x_in,
                                               uint8_t                       counter) {
 
         int64_t A = x_in.real();
         int64_t B = x_in.imag();
 
         const uint8_t R    = counter;
-        uint8_t       mask = 0x80;
+        uint8_t       mask = 0x01;
         if ((R & mask) == mask) {
             A = -A;
             B = -B;
         }
 
         for (uint16_t u = 1; u < NStages + 1; u++) {
-            mask = mask >> 1;
+            mask = mask << 1;
 
             const int64_t Ri = (R & mask) == mask ? 1 : -1;
 
@@ -68,7 +69,7 @@ private:
 public:
     uint8_t rom[max_length];
 
-    CRomGeneratorMCHalfPi() {
+    CRomGeneratorML() {
         for (unsigned n = 0; n < max_length; n++) {
             const double re_x = floor(double(scale_factor - 1) * cos(-rotation / double(q) * double(n)));
             const double im_x = floor(double(scale_factor - 1) * sin(-rotation / double(q) * double(n)));
@@ -80,7 +81,7 @@ public:
 
             std::complex<double> res;
             for (uint32_t v = 0; v < max_length; v++) {
-                const std::complex<int64_t> res_int = cordic_MC(x, v);
+                const std::complex<int64_t> res_int = cordic_ML(x, v);
 
                 const std::complex<double> res_dbl(double(res_int.real()) / double(scale_factor - 1),
                                                    double(res_int.imag()) / double(scale_factor - 1));
@@ -98,9 +99,9 @@ public:
     }
 };
 
-template <unsigned In_W, unsigned NStages, unsigned Tq>
-void generate_rom_header_mc(const char * filename) {
-    const CRomGeneratorMCHalfPi<In_W, NStages, Tq> rom;
+template <unsigned In_W, unsigned NStages, unsigned Tq, unsigned divider = 2>
+void generate_rom_header_ml(const char * filename) {
+    const CRomGeneratorML<In_W, NStages, Tq, divider> rom;
 
     FILE * rom_file = fopen(filename, "w");
     if (!bool(rom_file)) {
@@ -109,10 +110,10 @@ void generate_rom_header_mc(const char * filename) {
     }
 
     char upper_file_def[64];
-    snprintf(upper_file_def, 64, "CORDIC_ROMS_MC_%u_%u_%u", In_W, NStages, Tq);
+    snprintf(upper_file_def, 64, "CORDIC_ROMS_ML_%u_%u_%u_%u", In_W, NStages, Tq, divider);
 
     char rom_name[64];
-    snprintf(rom_name, 64, "mc_%u_%u_%u", In_W, NStages, Tq);
+    snprintf(rom_name, 64, "ml_%u_%u_%u_%u", In_W, NStages, Tq, divider);
 
     fprintf(rom_file, "#ifndef %s\n#define %s\n\n", upper_file_def, upper_file_def);
     fprintf(rom_file, "#include <cstdint>\n\n");
@@ -131,9 +132,9 @@ void generate_rom_header_mc(const char * filename) {
     fprintf(rom_file, "#endif // %s\n\n", upper_file_def);
 }
 
-template <unsigned In_W, unsigned NStages, unsigned Tq>
-void generate_rom_header_mc_raw(const char * filename) {
-    const CRomGeneratorMCHalfPi<In_W, NStages, Tq> rom;
+template <unsigned In_W, unsigned NStages, unsigned Tq, unsigned divider = 2>
+void generate_rom_header_ml_raw(const char * filename) {
+    const CRomGeneratorML<In_W, NStages, Tq, divider> rom;
 
     FILE * rom_file = fopen(filename, "w");
     if (!bool(rom_file)) {
@@ -145,7 +146,6 @@ void generate_rom_header_mc_raw(const char * filename) {
         fprintf(rom_file, "%03d\n", uint16_t(rom.rom[u]));
     }
     fprintf(rom_file, "%03d\n\n", uint16_t(rom.rom[rom.max_length - 1]));
-
 }
 
-#endif // _ROM_GENERATOR_MC_HALF_PI
+#endif // _ROM_GENERATOR_ML

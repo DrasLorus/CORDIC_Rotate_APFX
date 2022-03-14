@@ -96,10 +96,10 @@ endif ()
 
 set (
   ROM_TYPE
-  "mc"
-  CACHE STRING "RomGenerator to use, either 'mc' or 'cst'." 
+  "ml"
+  CACHE STRING "RomGenerator to use, either 'ml' or 'cst'." 
 )
-set_property(CACHE ROM_TYPE PROPERTY STRINGS "mc" "cst")
+set_property(CACHE ROM_TYPE PROPERTY STRINGS "ml" "cst")
 
 set (
   CORDIC_W
@@ -116,12 +116,17 @@ set (
   "64"
   CACHE STRING "number of rotation divisions."
 )
+set (
+  CORDIC_DIVIDER
+  "2"
+  CACHE STRING "rotation denominator."
+)
 
 add_subdirectory (RomGenerators)
 
 set (ROM_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/sources/CordicRoms)
 string (
-  CONFIGURE ${ROM_DIRECTORY}/cordic_rom_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}.hpp
+  CONFIGURE ${ROM_DIRECTORY}/cordic_rom_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.hpp
             ROM_HEADER
 )
 add_custom_command (
@@ -130,8 +135,8 @@ add_custom_command (
   WORKING_DIRECTORY ${ROM_DIRECTORY}
 )
 
-set (CORDIC_ROM_HEADER CCordicRotateRom_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}.hpp)
-set (CORDIC_ROM_SOURCE CCordicRotateRom_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}.cpp)
+set (CORDIC_ROM_HEADER CCordicRotateRom_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.hpp)
+set (CORDIC_ROM_SOURCE CCordicRotateRom_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.cpp)
 configure_file (
   sources/CCordicRotateRom/CCordicRotateRom.hpp.in
   ${CMAKE_CURRENT_SOURCE_DIR}/sources/CCordicRotateRom/${CORDIC_ROM_HEADER} @ONLY
@@ -167,7 +172,7 @@ if (ENABLE_TESTING)
 
   string (
     CONFIGURE
-      ${CMAKE_CURRENT_SOURCE_DIR}/sources/tb/cordic_rom_tb_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/sources/tb/cordic_rom_tb_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.cpp
       TB_SOURCE
   )
   configure_file (sources/tb/cordic_rom_tb.cpp.in ${TB_SOURCE} @ONLY)
@@ -191,10 +196,10 @@ file (GLOB ALL_CORDIC_ROM_HEADERS sources/CCordicRotateRom/CCordicRotateRom_*.hp
 add_custom_target (
   remove_byproducts
   COMMAND ${CMAKE_COMMAND} -E echo "-- Deleting generated sources files and headers"
-  COMMAND ${CMAKE_COMMAND} -E remove ${TB_SOURCE} ${ALL_ROM_TB_SOURCES}
-  COMMAND ${CMAKE_COMMAND} -E remove ${CORDIC_ROM_SOURCE} ${ALL_CORDIC_ROM_SOURCES}
-  COMMAND ${CMAKE_COMMAND} -E remove ${ALL_ROM_HEADERS}
-  COMMAND ${CMAKE_COMMAND} -E remove ${ALL_CORDIC_ROM_HEADERS}
+  COMMAND ${CMAKE_COMMAND} -E rm -f ${TB_SOURCE} ${ALL_ROM_TB_SOURCES}
+  COMMAND ${CMAKE_COMMAND} -E rm -f ${CORDIC_ROM_SOURCE} ${ALL_CORDIC_ROM_SOURCES}
+  COMMAND ${CMAKE_COMMAND} -E rm -f ${ALL_ROM_HEADERS}
+  COMMAND ${CMAKE_COMMAND} -E rm -f ${ALL_CORDIC_ROM_HEADERS}
   COMMAND ${CMAKE_COMMAND} -E echo "-- Files deleted."
   COMMAND ${CMAKE_COMMAND} -E echo
           "-- WARNING: You must re-run the cmake-configure step for the next build to succeed."

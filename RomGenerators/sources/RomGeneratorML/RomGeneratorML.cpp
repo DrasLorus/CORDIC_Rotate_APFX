@@ -17,20 +17,4 @@
  *
  */
 
-#include "RomGeneratorConst/RomGeneratorConst.hpp"
-#include "RomGeneratorMCHalfPi/RomGeneratorMCHalfPi.hpp"
-
-#include <fstream>
-#include <iostream>
-#include <string>
-
-using namespace std;
-
-int main(int, char **) {
-
-    const char filename[] = "cordic_rom_mc_16_6_64.hpp";
-
-    generate_rom_header_mc<16, 6, 64>(filename);
-
-    return EXIT_SUCCESS;
-}
+#include "RomGeneratorML.hpp"

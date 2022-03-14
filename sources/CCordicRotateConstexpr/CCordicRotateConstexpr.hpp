@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef C_CORDIC_ROTATE_ROM_HALF_PI_HPP
-#define C_CORDIC_ROTATE_ROM_HALF_PI_HPP
+#ifndef C_CORDIC_ROTATE_CONSTEXPR_HPP
+#define C_CORDIC_ROTATE_CONSTEXPR_HPP
 
 #include <climits>
 #include <cmath>
@@ -37,6 +37,7 @@ class CCordicRotateConstexpr {
     static_assert(TIn_W > 0, "Inputs can't be on zero bits.");
     static_assert(Tnb_stages < 8, "7 stages of CORDIC is the maximum supported.");
     static_assert(Tnb_stages > 1, "2 stages of CORDIC is the minimum.");
+    static_assert(((divider - 1) & divider) == 0, "divider must be a power of 2.");
 
 public:
     // ``` GNU Octave
@@ -57,6 +58,8 @@ public:
     static constexpr uint64_t in_scale_factor  = uint64_t(1U << (In_W - In_I));
     static constexpr uint64_t out_scale_factor = uint64_t(1U << (Out_W - Out_I));
 
+    static constexpr double rotation = CRomGeneratorConst<TIn_W, Tnb_stages, Tq, divider>::rotation;
+
     static constexpr int64_t scale_cordic(int64_t in) {
         return in * kn_i / 8U;
     }
@@ -68,14 +71,14 @@ public:
         int64_t B = x_in.imag();
 
         const uint8_t R    = rom_cordic.rom[counter];
-        uint8_t       mask = 0x80;
+        uint8_t       mask = 0x01;
         if ((R & mask) == mask) {
             A = -A;
             B = -B;
         }
 
         for (uint8_t u = 1; u < nb_stages + 1; u++) {
-            mask = mask >> 1;
+            mask = mask << 1;
 
             const int64_t Ri = (R & mask) == mask ? 1 : -1;
 
@@ -103,24 +106,23 @@ public:
 
 #endif
 
-    template <unsigned ap_W>
-    static ap_int<ap_W> scale_cordic(const ap_int<ap_W> & in) {
-        const ap_int<ap_W + 3> tmp = in * ap_uint<3>(kn_i);
-        return ap_int<ap_W>(tmp >> 3);
+    static ap_int<Out_W> scale_cordic(const ap_int<Out_W> & in) {
+        const ap_int<Out_W + 3> tmp = in * ap_uint<3>(kn_i);
+        return ap_int<Out_W>(tmp >> 3);
     }
 
     static void cordic(const ap_int<In_W> & re_in, const ap_int<In_W> & im_in,
                        const ap_uint<8> & counter,
                        ap_int<Out_W> & re_out, ap_int<Out_W> & im_out) {
 
-        const ap_uint<nb_stages + 1> R = (rom_cordic.rom[counter] >> (7 - nb_stages));
+        const ap_uint<nb_stages + 1> R = rom_cordic.rom[counter];
 
-        ap_int<Out_W> A = bool(R[nb_stages]) ? ap_int<In_W>(-re_in) : re_in;
-        ap_int<Out_W> B = bool(R[nb_stages]) ? ap_int<In_W>(-im_in) : im_in;
+        ap_int<Out_W> A = bool(R[0]) ? ap_int<In_W>(-re_in) : re_in;
+        ap_int<Out_W> B = bool(R[0]) ? ap_int<In_W>(-im_in) : im_in;
 
         for (uint8_t u = 1; u < nb_stages + 1; u++) { // nb_stages stages
 
-            const bool Ri = bool(R[nb_stages - u]);
+            const bool Ri = bool(R[u]);
 
             // Results in (X / 2^(u - 1)), meaning only the
             // Out_W - u LSBs are meaninfull in shifted_X
@@ -194,4 +196,4 @@ inline void CCordicRotateConstexpr<16, 4, 6, 64>::cordic(
 }
 #endif
 
-#endif // C_CORDIC_ROTATE_ROM_HALF_PI_HPP
+#endif // C_CORDIC_ROTATE_CONSTEXPR_HPP

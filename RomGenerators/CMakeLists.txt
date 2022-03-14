@@ -34,7 +34,7 @@ project (
 )
 
 add_library (
-  romgen sources/RomGeneratorMCHalfPi/RomGeneratorMCHalfPi.cpp
+  romgen sources/RomGeneratorML/RomGeneratorML.cpp
          sources/RomGeneratorConst/RomGeneratorConst.cpp
 )
 target_include_directories (romgen PUBLIC sources)
@@ -50,8 +50,8 @@ target_link_libraries (rom_generator_legacy PUBLIC romgen)
 
 set (
   ROM_TYPE
-  "mc"
-  CACHE STRING "RomGenerator to use, either 'mc' or 'const'."
+  "ml"
+  CACHE STRING "RomGenerator to use, either 'ml' or 'const'."
 )
 set (
   CORDIC_W
@@ -68,9 +68,16 @@ set (
   "64"
   CACHE STRING "number of rotation divisions."
 )
-
-configure_file (
-  sources/main_generator.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/sources/main_generator.cpp @ONLY
+set (
+  CORDIC_DIVIDER
+  "2"
+  CACHE STRING "Rotation denominator."
 )
-add_executable (rom_generator sources/main_generator.cpp)
+
+set (current_generator_source ${CMAKE_CURRENT_SOURCE_DIR}/sources/main_generator_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.cpp)
+configure_file (
+  sources/main_generator.cpp.in
+  ${current_generator_source} @ONLY
+)
+add_executable (rom_generator ${current_generator_source})
 target_link_libraries (rom_generator PUBLIC romgen)

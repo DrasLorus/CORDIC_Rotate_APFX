@@ -18,7 +18,7 @@
  */
 
 #include "RomGeneratorConst/RomGeneratorConst.hpp"
-#include "RomGeneratorMCHalfPi/RomGeneratorMCHalfPi.hpp"
+#include "RomGeneratorML/RomGeneratorML.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -56,7 +56,7 @@ constexpr complex<int64_t> cordic(complex<int64_t> x_in,
 
 template <unsigned NStages>
 void checkMC() {
-    const CRomGeneratorMCHalfPi<16, NStages, 64> rom;
+    const CRomGeneratorML<16, NStages, 64> rom;
 
     string   fn = "result_MC_W16_S" + to_string(NStages) + "_Q64.dat";
     ofstream res_file(fn);
@@ -83,28 +83,28 @@ void checkConst() {
 int main(int argc, char * argv[]) {
 
     uint8_t stages;
-    bool    use_mc;
+    bool    use_ml;
     bool    use_txt;
 
     switch (argc) {
         case 1:
             stages  = 6;
-            use_mc  = false;
+            use_ml  = false;
             use_txt = false;
             break;
         case 2:
             stages  = stoi(string(argv[1]));
-            use_mc  = false;
+            use_ml  = false;
             use_txt = false;
             break;
         case 3:
             stages  = stoi(string(argv[1]));
-            use_mc  = stoi(string(argv[2])) > 0;
+            use_ml  = stoi(string(argv[2])) > 0;
             use_txt = false;
             break;
         case 4:
             stages  = stoi(string(argv[1]));
-            use_mc  = stoi(string(argv[2])) > 0;
+            use_ml  = stoi(string(argv[2])) > 0;
             use_txt = stoi(string(argv[3])) > 0;
             break;
         default:
@@ -112,30 +112,30 @@ int main(int argc, char * argv[]) {
             exit(EXIT_FAILURE);
     }
     if (use_txt) {
-        if (use_mc) {
+        if (use_ml) {
             switch (stages) {
                 case 2:
-                    generate_rom_header_mc_raw<16, 2, 64>("rom_cordic_mc_W16_S2_Q64.txt");
+                    generate_rom_header_ml_raw<16, 2, 64>("rom_cordic_ml_W16_S2_Q64.txt");
                     checkMC<2>();
                     break;
                 case 3:
-                    generate_rom_header_mc_raw<16, 3, 64>("rom_cordic_mc_W16_S3_Q64.txt");
+                    generate_rom_header_ml_raw<16, 3, 64>("rom_cordic_ml_W16_S3_Q64.txt");
                     checkMC<3>();
                     break;
                 case 4:
-                    generate_rom_header_mc_raw<16, 4, 64>("rom_cordic_mc_W16_S4_Q64.txt");
+                    generate_rom_header_ml_raw<16, 4, 64>("rom_cordic_ml_W16_S4_Q64.txt");
                     checkMC<4>();
                     break;
                 case 5:
-                    generate_rom_header_mc_raw<16, 5, 64>("rom_cordic_mc_W16_S5_Q64.txt");
+                    generate_rom_header_ml_raw<16, 5, 64>("rom_cordic_ml_W16_S5_Q64.txt");
                     checkMC<5>();
                     break;
                 case 6:
-                    generate_rom_header_mc_raw<16, 6, 64>("rom_cordic_mc_W16_S6_Q64.txt");
+                    generate_rom_header_ml_raw<16, 6, 64>("rom_cordic_ml_W16_S6_Q64.txt");
                     checkMC<6>();
                     break;
                 case 7:
-                    generate_rom_header_mc_raw<16, 7, 64>("rom_cordic_mc_W16_S7_Q64.txt");
+                    generate_rom_header_ml_raw<16, 7, 64>("rom_cordic_ml_W16_S7_Q64.txt");
                     checkMC<7>();
                     break;
                 default:
@@ -175,30 +175,30 @@ int main(int argc, char * argv[]) {
         }
     } else {
 
-        if (use_mc) {
+        if (use_ml) {
             switch (stages) {
                 case 2:
-                    generate_rom_header_mc<16, 2, 64>("rom_cordic_mc_W16_S2_Q64.hpp");
+                    generate_rom_header_ml<16, 2, 64>("rom_cordic_ml_W16_S2_Q64.hpp");
                     checkMC<2>();
                     break;
                 case 3:
-                    generate_rom_header_mc<16, 3, 64>("rom_cordic_mc_W16_S3_Q64.hpp");
+                    generate_rom_header_ml<16, 3, 64>("rom_cordic_ml_W16_S3_Q64.hpp");
                     checkMC<3>();
                     break;
                 case 4:
-                    generate_rom_header_mc<16, 4, 64>("rom_cordic_mc_W16_S4_Q64.hpp");
+                    generate_rom_header_ml<16, 4, 64>("rom_cordic_ml_W16_S4_Q64.hpp");
                     checkMC<4>();
                     break;
                 case 5:
-                    generate_rom_header_mc<16, 5, 64>("rom_cordic_mc_W16_S5_Q64.hpp");
+                    generate_rom_header_ml<16, 5, 64>("rom_cordic_ml_W16_S5_Q64.hpp");
                     checkMC<5>();
                     break;
                 case 6:
-                    generate_rom_header_mc<16, 6, 64>("rom_cordic_mc_W16_S6_Q64.hpp");
+                    generate_rom_header_ml<16, 6, 64>("rom_cordic_ml_W16_S6_Q64.hpp");
                     checkMC<6>();
                     break;
                 case 7:
-                    generate_rom_header_mc<16, 7, 64>("rom_cordic_mc_W16_S7_Q64.hpp");
+                    generate_rom_header_ml<16, 7, 64>("rom_cordic_ml_W16_S7_Q64.hpp");
                     checkMC<7>();
                     break;
                 default:

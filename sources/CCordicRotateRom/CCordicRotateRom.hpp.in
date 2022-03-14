@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef C_CORDIC_ROTATE_ROM_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@
-#define C_CORDIC_ROTATE_ROM_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@
+#ifndef C_CORDIC_ROTATE_ROM_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@_@CORDIC_DIVIDER@
+#define C_CORDIC_ROTATE_ROM_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@_@CORDIC_DIVIDER@
 
 #include <climits>
 #include <cmath>
@@ -31,7 +31,7 @@
 #include <ap_int.h>
 
 #include "CCordicRotateRomTemplate.hpp"
-#include "CordicRoms/cordic_rom_@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@.hpp"
+#include "CordicRoms/cordic_rom_@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@_@CORDIC_DIVIDER@.hpp"
 
 #ifndef KN_STATIC_TABLE_DEFINED
 #define KN_STATIC_TABLE_DEFINED 1
@@ -44,10 +44,11 @@ static constexpr double kn_values[7] = {
 #endif // KN_STATIC_TABLE_DEFINED
 
 template <unsigned TIn_I>
-class CCordicRotateRom<TIn_I, @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDIC_Q@> {
+class CCordicRotateRom<TIn_I, @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDIC_Q@, @CORDIC_DIVIDER@> {
     static_assert(@CORDIC_W@ > 0, "Inputs can't be on zero bits.");
     static_assert(@CORDIC_STAGES@ < 8, "7 stages of CORDIC is the maximum supported.");
     static_assert(@CORDIC_STAGES@ > 1, "2 stages of CORDIC is the minimum.");
+    static_assert(((@CORDIC_DIVIDER@ - 1) & @CORDIC_DIVIDER@) == 0, "divider must be a power of 2.");
 
 public:
     static constexpr unsigned In_W      = @CORDIC_W@;
@@ -61,6 +62,8 @@ public:
     static constexpr uint64_t in_scale_factor  = uint64_t(1U << (In_W - In_I));
     static constexpr uint64_t out_scale_factor = uint64_t(1U << (Out_W - Out_I));
 
+    static constexpr double rotation = M_PI / @CORDIC_DIVIDER@;
+
     static constexpr int64_t scale_cordic(int64_t in) {
         return in * kn_i / 8U;
     }
@@ -71,15 +74,15 @@ public:
         int64_t A = x_in.real();
         int64_t B = x_in.imag();
 
-        const uint8_t R    = cordic_roms::@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@[counter];
-        uint8_t       mask = 0x80;
+        const uint8_t R    = cordic_roms::@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@_@CORDIC_DIVIDER@[counter];
+        uint8_t       mask = 0x01;
         if ((R & mask) == mask) {
             A = -A;
             B = -B;
         }
 
         for (uint8_t u = 1; u < nb_stages + 1; u++) {
-            mask = mask >> 1;
+            mask = mask << 1;
 
             const int64_t Ri = (R & mask) == mask ? 1 : -1;
 
@@ -107,24 +110,23 @@ public:
 
 #endif
 
-    template <unsigned ap_W>
-    static ap_int<ap_W> scale_cordic(const ap_int<ap_W> & in) {
-        const ap_int<ap_W + 3> tmp = in * ap_uint<3>(kn_i);
-        return ap_int<ap_W>(tmp >> 3);
+    static ap_int<Out_W> scale_cordic(const ap_int<Out_W> & in) {
+        const ap_int<Out_W + 3> tmp = in * ap_uint<3>(kn_i);
+        return ap_int<Out_W>(tmp >> 3);
     }
 
     static void cordic(const ap_int<In_W> & re_in, const ap_int<In_W> & im_in,
                        const ap_uint<8> & counter,
                        ap_int<Out_W> & re_out, ap_int<Out_W> & im_out) {
 
-        const ap_uint<nb_stages + 1> R = (cordic_roms::@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@[counter] >> (7 - nb_stages));
+        const ap_uint<nb_stages + 1> R = cordic_roms::@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@_@CORDIC_DIVIDER@[counter];
 
-        ap_int<Out_W> A = bool(R[nb_stages]) ? ap_int<In_W>(-re_in) : re_in;
-        ap_int<Out_W> B = bool(R[nb_stages]) ? ap_int<In_W>(-im_in) : im_in;
+        ap_int<Out_W> A = bool(R[0]) ? ap_int<In_W>(-re_in) : re_in;
+        ap_int<Out_W> B = bool(R[0]) ? ap_int<In_W>(-im_in) : im_in;
 
         for (uint8_t u = 1; u < nb_stages + 1; u++) { // nb_stages stages
 
-            const bool Ri = bool(R[nb_stages - u]);
+            const bool Ri = bool(R[u]);
 
             // Results in (X / 2^(u - 1)), meaning only the
             // Out_W - u LSBs are meaninfull in shifted_X
@@ -155,4 +157,4 @@ public:
     constexpr CCordicRotateRom() = default;
 };
 
-#endif // C_CORDIC_ROTATE_ROM_W_STAGES_Q
+#endif // C_CORDIC_ROTATE_ROM_W_STAGES_Q_DIVIDER

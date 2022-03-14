@@ -18,7 +18,7 @@
  */
 
 #include "RomGeneratorConst/RomGeneratorConst.hpp"
-#include "RomGeneratorMCHalfPi/RomGeneratorMCHalfPi.hpp"
+#include "RomGeneratorML/RomGeneratorML.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -28,9 +28,9 @@ using namespace std;
 
 int main(int, char **) {
 
-    const char filename[] = "cordic_rom_@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@.hpp";
+    const char filename[] = "cordic_rom_@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@_@CORDIC_DIVIDER@.hpp";
 
-    generate_rom_header_@ROM_TYPE@<@CORDIC_W@, @CORDIC_STAGES@, @CORDIC_Q@>(filename);
+    generate_rom_header_@ROM_TYPE@<@CORDIC_W@, @CORDIC_STAGES@, @CORDIC_Q@, @CORDIC_DIVIDER@>(filename);
 
     return EXIT_SUCCESS;
 }

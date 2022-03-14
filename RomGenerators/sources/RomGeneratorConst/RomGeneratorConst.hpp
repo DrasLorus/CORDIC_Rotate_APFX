@@ -33,6 +33,7 @@ class CRomGeneratorConst {
     static_assert(In_W > 0, "Inputs can't be on zero bits.");
     static_assert(NStages < 8, "7 stages of CORDIC is the maximum supported.");
     static_assert(NStages > 1, "2 stages of CORDIC is the minimum.");
+    static_assert(((divider - 1) & divider) == 0, "divider must be a power of 2.");
 
 public:
     static constexpr double   pi           = 3.14159265358979323846;
@@ -59,7 +60,7 @@ private:
         double B = 0;
 
         uint8_t       R        = 0;
-        const uint8_t sig_mask = 0x80;
+        const uint8_t sig_mask = 0x01;
 
         double beta = rot_in;
 
@@ -88,7 +89,7 @@ private:
 #if 0
             printf("Step %d - %03u : %02x : %8lf\n", u, R, R, beta);
 #endif
-            const uint8_t mask  = (1U << (7 - u));
+            const uint8_t mask  = (1U << u);
             const uint8_t nmask = ~mask;
 
             assert((mask & nmask) == 0x00);
@@ -123,7 +124,7 @@ public:
     }
 };
 
-template <unsigned In_W, unsigned NStages, unsigned Tq>
+template <unsigned In_W, unsigned NStages, unsigned Tq, unsigned divider = 2>
 void generate_rom_header_cst(const char * filename) {
     constexpr CRomGeneratorConst<In_W, NStages, Tq> rom {};
 
@@ -134,10 +135,10 @@ void generate_rom_header_cst(const char * filename) {
     }
 
     char upper_file_def[64];
-    snprintf(upper_file_def, 64, "CORDIC_ROMS_CST_%u_%u_%u", In_W, NStages, Tq);
+    snprintf(upper_file_def, 64, "CORDIC_ROMS_CST_%u_%u_%u_%u", In_W, NStages, Tq, divider);
 
     char rom_name[64];
-    snprintf(rom_name, 64, "cst_%u_%u_%u", In_W, NStages, Tq);
+    snprintf(rom_name, 64, "cst_%u_%u_%u_%u", In_W, NStages, Tq, divider);
 
     fprintf(rom_file, "#ifndef %s\n#define %s\n\n", upper_file_def, upper_file_def);
     fprintf(rom_file, "#include <cstdint>\n\n");
@@ -156,9 +157,9 @@ void generate_rom_header_cst(const char * filename) {
     fprintf(rom_file, "#endif // %s\n\n", upper_file_def);
 }
 
-template <unsigned In_W, unsigned NStages, unsigned Tq>
+template <unsigned In_W, unsigned NStages, unsigned Tq, unsigned divider = 2>
 void generate_rom_header_cst_raw(const char * filename = "rom_cordic.txt") {
-    constexpr CRomGeneratorConst<In_W, NStages, Tq> rom {};
+    constexpr CRomGeneratorConst<In_W, NStages, Tq, divider> rom {};
 
     FILE * rom_file = fopen(filename, "w");
     if (!bool(rom_file)) {
