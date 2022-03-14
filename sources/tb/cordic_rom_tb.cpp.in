@@ -27,14 +27,14 @@ using namespace std;
 
 using Catch::Matchers::Floating::WithinAbsMatcher;
 
-
 typedef CCordicRotateRom<4, @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDIC_Q@, @CORDIC_DIVIDER@> cordic_rom;
 
+#if defined(SOFTWARE)
 TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDIC_Q@, @CORDIC_DIVIDER@) works with C-Types", "[CORDIC]") {
     SECTION("W:@CORDIC_W@ - I:4 - Stages:@CORDIC_STAGES@ - q:@CORDIC_Q@ - div:@CORDIC_DIVIDER@") {
         static constexpr cordic_rom cordic {};
 
-        string input_fn  = "../data/input.dat"; 
+        string input_fn = "../data/input.dat";
 
         constexpr unsigned n_lines = 100000;
 
@@ -75,6 +75,7 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
         }
     }
 }
+#endif
 
 TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDIC_Q@, @CORDIC_DIVIDER@) works with AP-Types", "[CORDIC]") {
     constexpr unsigned n_lines = 100000;
@@ -195,6 +196,7 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
     }
 }
 
+#if defined(SOFTWARE)
 TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDIC_Q@, @CORDIC_DIVIDER@) constexpr are evaluated during compilation.", "[CORDIC]") {
     SECTION("W:@CORDIC_W@ - I:4 - Stages:@CORDIC_STAGES@ - q:@CORDIC_Q@ - div:@CORDIC_DIVIDER@ - C-Types") {
 
@@ -208,3 +210,4 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
         REQUIRE(res1 == cordic_rom::cordic(value_in, angle));
     }
 }
+#endif

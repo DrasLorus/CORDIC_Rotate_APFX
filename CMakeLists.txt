@@ -41,6 +41,9 @@ option (EXPORT_COMMANDS "export compile commands, for use with clangd for exampl
 option (ENABLE_XILINX "use Xilinx provided proprietary headers." OFF)
 
 option (ENABLE_TESTING "use Catch2 in conjunction with CTest as a test suite." ON)
+option (ENABLE_SOFTWARE
+        "use C++ standard library types (like std::complex). Unsuitable for synthesis." ON
+)
 
 option (PEDANTIC "use -Wall and -pedantic." ON)
 
@@ -92,6 +95,10 @@ if ((NOT EXISTS ${AP_INCLUDE_DIR}/ap_int.h) OR (NOT EXISTS ${AP_INCLUDE_DIR}/ap_
   message (FATAL_ERROR "Arbitrary precision headers not found in ${AP_INCLUDE_DIR}.\n"
                        "Please provide a suitable path to the headers."
   )
+endif ()
+
+if (ENABLE_SOFTWARE)
+  add_compile_definitions (SOFTWARE=1)
 endif ()
 
 set (

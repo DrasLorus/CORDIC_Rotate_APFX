@@ -32,6 +32,7 @@
 
 #include "CCordicRotateRomTemplate.hpp"
 #include "CordicRoms/cordic_rom_@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@_@CORDIC_DIVIDER@.hpp"
+#include "definitions.hpp"
 
 #ifndef KN_STATIC_TABLE_DEFINED
 #define KN_STATIC_TABLE_DEFINED 1
@@ -48,7 +49,7 @@ class CCordicRotateRom<TIn_I, @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDIC_Q
     static_assert(@CORDIC_W@ > 0, "Inputs can't be on zero bits.");
     static_assert(@CORDIC_STAGES@ < 8, "7 stages of CORDIC is the maximum supported.");
     static_assert(@CORDIC_STAGES@ > 1, "2 stages of CORDIC is the minimum.");
-    static_assert(((@CORDIC_DIVIDER@ - 1) & @CORDIC_DIVIDER@) == 0, "divider must be a power of 2.");
+    static_assert(is_pow_2(@CORDIC_DIVIDER@), "divider must be a power of 2.");
 
 public:
     static constexpr unsigned In_W      = @CORDIC_W@;
@@ -62,12 +63,14 @@ public:
     static constexpr uint64_t in_scale_factor  = uint64_t(1U << (In_W - In_I));
     static constexpr uint64_t out_scale_factor = uint64_t(1U << (Out_W - Out_I));
 
-    static constexpr double rotation = M_PI / @CORDIC_DIVIDER@;
+    static constexpr double   rotation    = pi / @CORDIC_DIVIDER@;
+    static constexpr unsigned addr_length = cordic_roms::@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@_@CORDIC_DIVIDER@_size;
 
     static constexpr int64_t scale_cordic(int64_t in) {
         return in * kn_i / 8U;
     }
 
+#if !defined(__SYNTHESIS__) && defined(SOFTWARE)
     static constexpr std::complex<int64_t> cordic(std::complex<int64_t> x_in,
                                                   uint8_t               counter) {
 
@@ -94,7 +97,6 @@ public:
         return {(A), (B)};
     }
 
-#ifndef __SYNTHESIS__
     static constexpr double scale_cordic(double in) {
         return in * kn_values[nb_stages - 1];
     }

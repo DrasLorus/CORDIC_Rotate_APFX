@@ -92,6 +92,7 @@ TEST_CASE("Adaptive CORDIC work as intended", "[!hide][WIP]") {
     // Return 0 if the test passed
 }
 
+#if defined(SOFTWARE)
 TEST_CASE("ROM-based Cordic works with C-Types", "[CORDIC]") {
     SECTION("W:16 - I:4 - Stages:6 - q:64") {
         typedef CCordicRotateConstexpr<16, 4, 6, 64> cordic_rom;
@@ -156,6 +157,7 @@ TEST_CASE("ROM-based Cordic works with C-Types", "[CORDIC]") {
         // Return 0 if the test passed
     }
 }
+#endif
 
 TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
     constexpr unsigned n_lines = 100000;
@@ -480,6 +482,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
     }
 }
 
+#if defined(SOFTWARE)
 TEST_CASE("ROM-based Cordic constexpr are evaluated during compilation.", "[CORDIC]") {
     SECTION("W:16 - I:4 - Stages:6 - q:64 - C-Types") {
         typedef CCordicRotateConstexpr<16, 4, 6, 64> cordic_rom;
@@ -507,3 +510,4 @@ TEST_CASE("ROM-based Cordic constexpr are evaluated during compilation.", "[CORD
         REQUIRE(res1 == cordic_rom::cordic(value_in, angle));
     }
 }
+#endif

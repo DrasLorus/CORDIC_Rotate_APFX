@@ -25,18 +25,22 @@
 #include <complex>
 #include <cstdint>
 
+#include "definitions.hpp"
+
 template <unsigned In_W, unsigned NStages, unsigned Tq, unsigned divider = 2>
 class CRomGeneratorML {
     static_assert(In_W > 0, "Inputs can't be on zero bits.");
     static_assert(NStages < 8, "7 stages of CORDIC is the maximum supported.");
     static_assert(NStages > 1, "2 stages of CORDIC is the minimum.");
     static_assert(NStages > 1, "2 stages of CORDIC is the minimum.");
-    static_assert(((divider - 1) & divider) == 0, "divider must be a power of 2.");
+    static_assert(is_pow_2(divider), "divider must be a power of 2.");
 
 public:
-    static constexpr double   rotation     = M_PI / divider;
-    static constexpr double   q            = Tq;
-    static constexpr uint32_t max_length   = 2 * divider * Tq; // 2pi / (pi / divider) * q
+    static constexpr double rotation = pi / divider;
+    static constexpr double q        = Tq;
+
+    static constexpr unsigned max_length   = 2 * divider * Tq; // 2pi / (pi / divider) * q
+    static constexpr unsigned addr_length  = needed_bits(max_length - 1);
     static constexpr int64_t  scale_factor = int64_t(1U << (In_W - 1));
 
 private:
@@ -115,11 +119,15 @@ void generate_rom_header_ml(const char * filename) {
     char rom_name[64];
     snprintf(rom_name, 64, "ml_%u_%u_%u_%u", In_W, NStages, Tq, divider);
 
+    fprintf(rom_file, "/** @file %s\n * THIS FILE IS GENERATED AUTOMATICALY, DO NOT EDIT IT!\n */\n", filename);
+
     fprintf(rom_file, "#ifndef %s\n#define %s\n\n", upper_file_def, upper_file_def);
     fprintf(rom_file, "#include <cstdint>\n\n");
-    fprintf(rom_file, "namespace cordic_roms {\n");
+    fprintf(rom_file, "namespace cordic_roms {\n\n");
 
-    fprintf(rom_file, "constexpr uint8_t %s[%d] = {\n  ", rom_name, rom.max_length);
+    fprintf(rom_file, "constexpr uint64_t %s_size = %d;\n\n", rom_name, rom.max_length);
+
+    fprintf(rom_file, "constexpr uint8_t  %s[%d] = {\n  ", rom_name, rom.max_length);
     for (uint16_t u = 0; u < rom.max_length - 1; u++) {
         if (((u & 7) == 0) && u != 0) {
             fprintf(rom_file, "\n  ");

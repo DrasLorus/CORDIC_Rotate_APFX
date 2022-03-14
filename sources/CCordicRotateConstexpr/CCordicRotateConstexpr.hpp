@@ -37,7 +37,7 @@ class CCordicRotateConstexpr {
     static_assert(TIn_W > 0, "Inputs can't be on zero bits.");
     static_assert(Tnb_stages < 8, "7 stages of CORDIC is the maximum supported.");
     static_assert(Tnb_stages > 1, "2 stages of CORDIC is the minimum.");
-    static_assert(((divider - 1) & divider) == 0, "divider must be a power of 2.");
+    static_assert(is_pow_2(divider), "divider must be a power of 2.");
 
 public:
     // ``` GNU Octave
@@ -54,18 +54,20 @@ public:
     static constexpr unsigned Out_I     = In_I + 2;
     static constexpr unsigned nb_stages = Tnb_stages;
 
-    static constexpr uint64_t kn_i             = uint64_t(kn_values[nb_stages - 1] * double(1U << 3)); // 3 bits are enough
-    static constexpr uint64_t in_scale_factor  = uint64_t(1U << (In_W - In_I));
-    static constexpr uint64_t out_scale_factor = uint64_t(1U << (Out_W - Out_I));
+    static constexpr unsigned kn_i             = unsigned(kn_values[nb_stages - 1] * double(1U << 3)); // 3 bits are enough
+    static constexpr unsigned in_scale_factor  = unsigned(1U << (In_W - In_I));
+    static constexpr unsigned out_scale_factor = unsigned(1U << (Out_W - Out_I));
 
-    static constexpr double rotation = CRomGeneratorConst<TIn_W, Tnb_stages, Tq, divider>::rotation;
+    static constexpr double   rotation    = CRomGeneratorConst<TIn_W, Tnb_stages, Tq, divider>::rotation;
+    static constexpr unsigned addr_length = CRomGeneratorConst<TIn_W, Tnb_stages, Tq, divider>::addr_length;
 
     static constexpr int64_t scale_cordic(int64_t in) {
         return in * kn_i / 8U;
     }
 
+#if !defined(__SYNTHESIS__) && defined(SOFTWARE)
     static constexpr std::complex<int64_t> cordic(std::complex<int64_t> x_in,
-                                                  uint8_t               counter) {
+                                                  uint64_t              counter) {
 
         int64_t A = x_in.real();
         int64_t B = x_in.imag();
@@ -90,13 +92,12 @@ public:
         return {(A), (B)};
     }
 
-#ifndef __SYNTHESIS__
     static constexpr double scale_cordic(double in) {
         return in * kn_values[nb_stages - 1];
     }
 
     static constexpr std::complex<double> cordic(std::complex<double> x_in,
-                                                 uint8_t              counter) {
+                                                 uint64_t             counter) {
         const std::complex<int64_t> fx_x_in(int64_t(x_in.real() * double(in_scale_factor)),
                                             int64_t(x_in.imag() * double(in_scale_factor)));
 
@@ -112,7 +113,7 @@ public:
     }
 
     static void cordic(const ap_int<In_W> & re_in, const ap_int<In_W> & im_in,
-                       const ap_uint<8> & counter,
+                       const ap_uint<addr_length> & counter,
                        ap_int<Out_W> & re_out, ap_int<Out_W> & im_out) {
 
         const ap_uint<nb_stages + 1> R = rom_cordic.rom[counter];
