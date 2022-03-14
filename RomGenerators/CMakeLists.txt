@@ -34,8 +34,7 @@ project (
 )
 
 add_library (
-  romgen sources/RomGeneratorML/RomGeneratorML.cpp
-         sources/RomGeneratorConst/RomGeneratorConst.cpp
+  romgen sources/RomGeneratorML/RomGeneratorML.cpp sources/RomGeneratorConst/RomGeneratorConst.cpp
 )
 target_include_directories (romgen PUBLIC sources)
 
@@ -74,10 +73,10 @@ set (
   CACHE STRING "Rotation denominator."
 )
 
-set (current_generator_source ${CMAKE_CURRENT_SOURCE_DIR}/sources/main_generator_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.cpp)
-configure_file (
-  sources/main_generator.cpp.in
-  ${current_generator_source} @ONLY
+set (
+  current_generator_source
+  ${CMAKE_CURRENT_SOURCE_DIR}/sources/main_generator_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.cpp
 )
+configure_file (sources/main_generator.cpp.in ${current_generator_source} @ONLY)
 add_executable (rom_generator ${current_generator_source})
 target_link_libraries (rom_generator PUBLIC romgen)

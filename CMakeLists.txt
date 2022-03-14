@@ -97,9 +97,9 @@ endif ()
 set (
   ROM_TYPE
   "ml"
-  CACHE STRING "RomGenerator to use, either 'ml' or 'cst'." 
+  CACHE STRING "RomGenerator to use, either 'ml' or 'cst'."
 )
-set_property(CACHE ROM_TYPE PROPERTY STRINGS "ml" "cst")
+set_property (CACHE ROM_TYPE PROPERTY STRINGS "ml" "cst")
 
 set (
   CORDIC_W
@@ -126,8 +126,9 @@ add_subdirectory (RomGenerators)
 
 set (ROM_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/sources/CordicRoms)
 string (
-  CONFIGURE ${ROM_DIRECTORY}/cordic_rom_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.hpp
-            ROM_HEADER
+  CONFIGURE
+    ${ROM_DIRECTORY}/cordic_rom_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.hpp
+    ROM_HEADER
 )
 add_custom_command (
   OUTPUT ${ROM_HEADER}
@@ -135,8 +136,12 @@ add_custom_command (
   WORKING_DIRECTORY ${ROM_DIRECTORY}
 )
 
-set (CORDIC_ROM_HEADER CCordicRotateRom_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.hpp)
-set (CORDIC_ROM_SOURCE CCordicRotateRom_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.cpp)
+set (CORDIC_ROM_HEADER
+     CCordicRotateRom_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.hpp
+)
+set (CORDIC_ROM_SOURCE
+     CCordicRotateRom_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.cpp
+)
 configure_file (
   sources/CCordicRotateRom/CCordicRotateRom.hpp.in
   ${CMAKE_CURRENT_SOURCE_DIR}/sources/CCordicRotateRom/${CORDIC_ROM_HEADER} @ONLY

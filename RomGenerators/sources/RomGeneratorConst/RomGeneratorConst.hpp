@@ -42,7 +42,7 @@ public:
     static constexpr double   rotation     = pi / divider;
     static constexpr double   q            = Tq;
     static constexpr uint32_t max_length   = 2 * divider * Tq; // 2pi / (pi / divider) * q
-    static constexpr int64_t  scale_factor = int64_t(1U << (In_W - 1)); 
+    static constexpr int64_t  scale_factor = int64_t(1U << (In_W - 1));
 
     static constexpr double atanDbl[28] {
         0.78539816339745, 0.46364760900081, 0.24497866312686, 0.12435499454676,
@@ -152,7 +152,7 @@ void generate_rom_header_cst(const char * filename) {
         fprintf(rom_file, "%3d, ", uint16_t(rom.rom[u]));
     }
     fprintf(rom_file, "%3d};\n", uint16_t(rom.rom[rom.max_length - 1]));
-    
+
     fprintf(rom_file, "\n} // namespace cordic_roms\n\n");
     fprintf(rom_file, "#endif // %s\n\n", upper_file_def);
 }
