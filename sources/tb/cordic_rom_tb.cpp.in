@@ -101,12 +101,12 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
         double results_re[n_lines];
         double results_im[n_lines];
 
-        ifstream INPUT(input_fn);
+        FILE * INPUT = fopen(input_fn.c_str(), "r");
 
         // Init test vector
         for (unsigned i = 0; i < n_lines; i++) {
             double a, b, r;
-            INPUT >> a >> b >> r;
+            fscanf(INPUT, "%lf,%lf,%lf\n", &a, &b, &r);
 
             const complex<double> c {a, b};
             values_re_in[i] = int64_t(a * double(cordic_rom::in_scale_factor));
@@ -117,7 +117,7 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
             results_im[i]           = e.imag();
         }
 
-        INPUT.close();
+        fclose(INPUT);
 
         constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
 
@@ -156,12 +156,12 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
         double results_re[n_lines];
         double results_im[n_lines];
 
-        ifstream INPUT(input_fn);
+        FILE * INPUT = fopen(input_fn.c_str(), "r");
 
         // Init test vector
         for (unsigned i = 0; i < n_lines; i++) {
             double a, b, r;
-            INPUT >> a >> b >> r;
+            fscanf(INPUT, "%lf,%lf,%lf\n", &a, &b, &r);
 
             const complex<double> c {a, b};
             values_re_in[i] = int64_t(a * double(cordic_rom::in_scale_factor));
@@ -172,7 +172,7 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
             results_im[i]           = e.imag();
         }
 
-        INPUT.close();
+        fclose(INPUT);
 
         constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
 

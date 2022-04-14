@@ -54,7 +54,7 @@ public:
     static constexpr unsigned Out_I     = In_I + 2;
     static constexpr unsigned nb_stages = Tnb_stages;
 
-    static constexpr unsigned kn_i             = unsigned(kn_values[nb_stages - 1] * double(1U << 3)); // 3 bits are enough
+    static constexpr unsigned kn_i             = unsigned(kn_values[nb_stages - 1] * double(1U << 4)); // 4 bits are enough
     static constexpr unsigned in_scale_factor  = unsigned(1U << (In_W - In_I));
     static constexpr unsigned out_scale_factor = unsigned(1U << (Out_W - Out_I));
 
@@ -62,7 +62,7 @@ public:
     static constexpr unsigned addr_length = CRomGeneratorConst<TIn_W, Tnb_stages, Tq, divider>::addr_length;
 
     static constexpr int64_t scale_cordic(int64_t in) {
-        return in * kn_i / 8U;
+        return in * kn_i / 16U;
     }
 
 #if !defined(__SYNTHESIS__) && defined(SOFTWARE)
@@ -108,8 +108,8 @@ public:
 #endif
 
     static ap_int<Out_W> scale_cordic(const ap_int<Out_W> & in) {
-        const ap_int<Out_W + 3> tmp = in * ap_uint<3>(kn_i);
-        return ap_int<Out_W>(tmp >> 3);
+        const ap_int<Out_W + 4> tmp = in * ap_uint<4>(kn_i);
+        return ap_int<Out_W>(tmp >> 4);
     }
 
     static void cordic(const ap_int<In_W> & re_in, const ap_int<In_W> & im_in,

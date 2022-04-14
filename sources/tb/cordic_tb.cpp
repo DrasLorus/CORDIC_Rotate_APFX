@@ -30,7 +30,7 @@ using Catch::Matchers::Floating::WithinAbsMatcher;
 
 typedef CCordicRotateSmart<8, 14, 4, 17, 5, 19, 7, 12> cordic_legacy;
 
-TEST_CASE("Adaptive CORDIC work as intended", "[!hide][WIP]") {
+TEST_CASE("Adaptive CORDIC work as intended", "[!mayfail][!hide][WIP]") {
 
     string input_fn  = "../data/input.dat";  // _8_14_4_17_5_19_7_12
     string output_fn = "../data/output.dat"; // _8_14_4_17_5_19_7_12
@@ -45,28 +45,29 @@ TEST_CASE("Adaptive CORDIC work as intended", "[!hide][WIP]") {
     double exp_re_out[n_lines];
     double exp_im_out[n_lines];
 
-    ofstream FILE;
-
-    ifstream INPUT(input_fn);
-    ifstream RESULTS(output_fn);
+    FILE * INPUT   = fopen(input_fn.c_str(), "r");
+    FILE * RESULTS = fopen(output_fn.c_str(), "r");
     // Init test vector
     for (unsigned i = 0; i < n_lines; i++) {
 
         double a, b, c;
-        INPUT >> a >> b >> c;
+        fscanf(INPUT, "%lf,%lf,%lf\n", &a, &b, &c);
         values_re_in[i] = a;
         values_im_in[i] = b;
         angles_in[i]    = c;
 
-        RESULTS >> a >> b;
+        fscanf(RESULTS, "%lf,%lf\n", &a, &b);
         exp_re_out[i] = a;
         exp_im_out[i] = b;
     }
-    INPUT.close();
-    RESULTS.close();
+    fclose(INPUT);
+    fclose(RESULTS);
+
+
+    constexpr double abs_margin = double(1 << 6) * 3. / 100.;
 
     // Save the results to a file
-    // FILE.open("results.dat");
+    // ofstream FILE("results.dat");
 
     // Executing the encoder
     for (unsigned iter = 0; iter < n_lines; iter++) {
@@ -82,8 +83,8 @@ TEST_CASE("Adaptive CORDIC work as intended", "[!hide][WIP]") {
 
         // FILE << values_re_out[iter].to_float() << ", " << values_re_out[iter].to_float() << endl;
 
-        REQUIRE_THAT(values_re_out[iter].to_float(), WithinAbsMatcher(exp_re_out[iter], 0.079997558593750));
-        REQUIRE_THAT(values_im_out[iter].to_float(), WithinAbsMatcher(exp_im_out[iter], 0.079997558593750));
+        REQUIRE_THAT(values_re_out[iter].to_double(), WithinAbsMatcher(exp_re_out[iter], abs_margin));
+        REQUIRE_THAT(values_im_out[iter].to_double(), WithinAbsMatcher(exp_im_out[iter], abs_margin));
     }
     // FILE.close();
 
@@ -111,12 +112,12 @@ TEST_CASE("ROM-based Cordic works with C-Types", "[CORDIC]") {
 
         // ofstream FILE;
 
-        ifstream INPUT(input_fn);
+        FILE * INPUT = fopen(input_fn.c_str(), "r");
 
         // Init test vector
         for (unsigned i = 0; i < n_lines; i++) {
             double a, b, r;
-            INPUT >> a >> b >> r;
+            fscanf(INPUT, "%lf,%lf,%lf\n", &a, &b, &r);
 
             const complex<double> c {a, b};
             values_in[i] = c;
@@ -128,7 +129,7 @@ TEST_CASE("ROM-based Cordic works with C-Types", "[CORDIC]") {
             results[i]              = c * e;
         }
 
-        INPUT.close();
+        fclose(INPUT);
 
         // Save the results to a file
         // FILE.open("results.dat");
@@ -186,12 +187,12 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
         // ofstream out_stream;
 
-        ifstream INPUT(input_fn);
+        FILE * INPUT = fopen(input_fn.c_str(), "r");
 
         // Init test vector
         for (unsigned i = 0; i < n_lines; i++) {
             double a, b, r;
-            INPUT >> a >> b >> r;
+            fscanf(INPUT, "%lf,%lf,%lf\n", &a, &b, &r);
 
             const complex<double> c {a, b};
             values_re_in[i] = int64_t(a * double(cordic_rom::in_scale_factor));
@@ -202,7 +203,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             results_im[i]           = e.imag();
         }
 
-        INPUT.close();
+        fclose(INPUT);
 
         // Save the results to a file
         // out_stream.open("results_ap.dat");
@@ -229,8 +230,8 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
             // out_stream << values_re_out[iter].to_int64() << " " << values_im_out[iter].to_int64() << " " << results_re[iter] << " " << results_im[iter] << endl;
 
-            REQUIRE_THAT(values_re_out[iter].to_double() * 5. / 8. / cordic_rom::out_scale_factor, WithinAbsMatcher(results_re[iter], abs_margin));
-            REQUIRE_THAT(values_im_out[iter].to_double() * 5. / 8. / cordic_rom::out_scale_factor, WithinAbsMatcher(results_im[iter], abs_margin));
+            REQUIRE_THAT(cordic_rom::scale_cordic(values_re_out[iter].to_double()) / cordic_rom::out_scale_factor, WithinAbsMatcher(results_re[iter], abs_margin));
+            REQUIRE_THAT(cordic_rom::scale_cordic(values_im_out[iter].to_double()) / cordic_rom::out_scale_factor, WithinAbsMatcher(results_im[iter], abs_margin));
         }
         // out_stream.close();
         // fclose(romf);
@@ -263,12 +264,12 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
         // ofstream out_stream;
 
-        ifstream INPUT(input_fn);
+        FILE * INPUT = fopen(input_fn.c_str(), "r");
 
         // Init test vector
         for (unsigned i = 0; i < n_lines; i++) {
             double a, b, r;
-            INPUT >> a >> b >> r;
+            fscanf(INPUT, "%lf,%lf,%lf\n", &a, &b, &r);
 
             const complex<double> c {a, b};
             values_re_in[i] = int64_t(a * double(cordic_rom::in_scale_factor));
@@ -279,7 +280,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             results_im[i]           = e.imag();
         }
 
-        INPUT.close();
+        fclose(INPUT);
 
         // Save the results to a file
         // out_stream.open("results_ap.dat");
@@ -345,12 +346,12 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
         // ofstream out_stream;
 
-        ifstream INPUT(input_fn);
+        FILE * INPUT = fopen(input_fn.c_str(), "r");
 
         // Init test vector
         for (unsigned i = 0; i < n_lines; i++) {
             double a, b, r;
-            INPUT >> a >> b >> r;
+            fscanf(INPUT, "%lf,%lf,%lf\n", &a, &b, &r);
 
             const complex<double> c {a, b};
             values_re_in[i] = int64_t(a * double(cordic_rom::in_scale_factor));
@@ -361,7 +362,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             results_im[i]           = e.imag();
         }
 
-        INPUT.close();
+        fclose(INPUT);
 
         // Save the results to a file
         // out_stream.open("results_ap.dat");
