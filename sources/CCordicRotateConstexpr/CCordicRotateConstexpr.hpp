@@ -65,6 +65,10 @@ public:
         return in * kn_i / 16U;
     }
 
+    static constexpr double scale_cordic(double in) {
+        return in * kn_values[nb_stages - 1];
+    }
+
 #if !defined(__SYNTHESIS__) && defined(SOFTWARE)
     static constexpr std::complex<int64_t> cordic(std::complex<int64_t> x_in,
                                                   uint64_t              counter) {
@@ -90,10 +94,6 @@ public:
         }
 
         return {(A), (B)};
-    }
-
-    static constexpr double scale_cordic(double in) {
-        return in * kn_values[nb_stages - 1];
     }
 
     static constexpr std::complex<double> cordic(std::complex<double> x_in,

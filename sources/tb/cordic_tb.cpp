@@ -206,7 +206,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         fclose(INPUT);
 
         // Save the results to a file
-        // out_stream.open("results_ap.dat");
+        // ofstream out_stream("results_ap.dat");
         // FILE * romf = fopen("rom.dat", "w");
 
         constexpr double abs_margin = double(1 << (cordic.Out_I - 1)) * 2. / 100.;

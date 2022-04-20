@@ -189,18 +189,18 @@ if (ENABLE_TESTING)
   )
   configure_file (sources/tb/cordic_rom_tb.cpp.in ${TB_SOURCE} @ONLY)
 
-  add_library (catch_common OBJECT sources/tb/main_catch2.cpp)
-  target_link_libraries (catch_common PUBLIC Catch2::Catch2)
+  add_library (catch_common_${PROJECT_NAME} OBJECT sources/tb/main_catch2.cpp)
+  target_link_libraries (catch_common_${PROJECT_NAME} PUBLIC Catch2::Catch2)
 
   file (GLOB ALL_ROM_TB_SOURCES sources/tb/cordic_rom_*.cpp)
   list (REMOVE_ITEM ALL_ROM_TB_SOURCES ${TB_SOURCE})
 
   add_executable (cordic_tb sources/tb/cordic_tb.cpp ${TB_SOURCE} ${ALL_ROM_TB_SOURCES})
-  target_link_libraries (cordic_tb PUBLIC cordic catch_common)
+  target_link_libraries (cordic_tb PRIVATE cordic catch_common_${PROJECT_NAME})
 
   include (CTest)
   include (Catch)
-  catch_discover_tests (cordic_tb)
+  catch_discover_tests (cordic_tb WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data)
 endif ()
 
 file (GLOB ALL_ROM_HEADERS sources/CordicRoms/cordic_rom_*.hpp)
