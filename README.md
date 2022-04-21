@@ -1,5 +1,7 @@
 # CORDIC Rotate APFX
 
+[![CmakeDocker](https://github.com/DrasLorus/CORDIC_Rotate_APFX/actions/workflows/docker.yml/badge.svg)](https://github.com/DrasLorus/CORDIC_Rotate_APFX/actions/workflows/docker.yml)
+
 A free way to implement a CORDIC-based rotation using HLS, with bit-accurate precision.
 
 ## Goal
