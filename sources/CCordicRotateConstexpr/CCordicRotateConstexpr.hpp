@@ -32,12 +32,14 @@
 
 #include "RomGeneratorConst/RomGeneratorConst.hpp"
 
+namespace rcr = rom_cordic_rotate;
+
 template <unsigned TIn_W, unsigned TIn_I, unsigned Tnb_stages, unsigned Tq, unsigned divider = 2>
 class CCordicRotateConstexpr {
     static_assert(TIn_W > 0, "Inputs can't be on zero bits.");
     static_assert(Tnb_stages < 8, "7 stages of CORDIC is the maximum supported.");
     static_assert(Tnb_stages > 1, "2 stages of CORDIC is the minimum.");
-    static_assert(is_pow_2(divider), "divider must be a power of 2.");
+    static_assert(rcr::is_pow_2<divider>(), "divider must be a power of 2.");
 
 public:
     // ``` GNU Octave

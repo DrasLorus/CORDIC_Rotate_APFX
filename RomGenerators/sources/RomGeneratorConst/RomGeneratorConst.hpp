@@ -28,21 +28,23 @@
 
 #include <cassert>
 
-#include "definitions.hpp"
+#include "RomRotateCommon/definitions.hpp"
+
+namespace rcr = rom_cordic_rotate;
 
 template <unsigned In_W, unsigned NStages, unsigned Tq, unsigned divider = 2>
 class CRomGeneratorConst {
     static_assert(In_W > 0, "Inputs can't be on zero bits.");
     static_assert(NStages < 8, "7 stages of CORDIC is the maximum supported.");
     static_assert(NStages > 1, "2 stages of CORDIC is the minimum.");
-    static_assert(is_pow_2(divider), "divider must be a power of 2.");
+    static_assert(rcr::is_pow_2<divider>(), "divider must be a power of 2.");
 
 public:
-    static constexpr double rotation = pi / divider;
+    static constexpr double rotation = rcr::pi / divider;
     static constexpr double q        = Tq;
 
     static constexpr unsigned max_length   = 2 * divider * Tq; // 2pi / (pi / divider) * q
-    static constexpr unsigned addr_length  = needed_bits(max_length - 1);
+    static constexpr unsigned addr_length  = rcr::needed_bits<max_length - 1>();
     static constexpr int64_t  scale_factor = int64_t(1U << (In_W - 1));
 
     static constexpr double atanDbl[28] {
@@ -68,18 +70,18 @@ private:
 #if 0
         printf("Step 0 - %03u : %02x : %8lf\n", R, R, beta);
 #endif
-        if ((beta < -two_pi) || (two_pi <= beta)) {
+        if ((beta < -rcr::two_pi) || (rcr::two_pi <= beta)) {
             fprintf(stderr, "rotation must be inside ] -2*pi; 2*pi ]");
             exit(EXIT_FAILURE);
         }
 
-        if ((beta <= -pi) || (beta > pi)) {
-            beta = beta < 0. ? beta + two_pi : beta - two_pi;
+        if ((beta <= -rcr::pi) || (beta > rcr::pi)) {
+            beta = beta < 0. ? beta + rcr::two_pi : beta - rcr::two_pi;
         }
 
-        if ((beta < -half_pi) || (beta > half_pi)) {
+        if ((beta < -rcr::half_pi) || (beta > rcr::half_pi)) {
             R    = R | sig_mask;
-            beta = beta < 0 ? beta + pi : beta - pi;
+            beta = beta < 0 ? beta + rcr::pi : beta - rcr::pi;
             // A    = -A;
             // B    = -B;
         } else {

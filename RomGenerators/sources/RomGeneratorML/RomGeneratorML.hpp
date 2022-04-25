@@ -25,7 +25,9 @@
 #include <complex>
 #include <cstdint>
 
-#include "definitions.hpp"
+#include "RomRotateCommon/definitions.hpp"
+
+namespace rcr = rom_cordic_rotate;
 
 template <unsigned In_W, unsigned NStages, unsigned Tq, unsigned divider = 2>
 class CRomGeneratorML {
@@ -33,14 +35,14 @@ class CRomGeneratorML {
     static_assert(NStages < 8, "7 stages of CORDIC is the maximum supported.");
     static_assert(NStages > 1, "2 stages of CORDIC is the minimum.");
     static_assert(NStages > 1, "2 stages of CORDIC is the minimum.");
-    static_assert(is_pow_2(divider), "divider must be a power of 2.");
+    static_assert(rcr::is_pow_2<divider>(), "divider must be a power of 2.");
 
 public:
-    static constexpr double rotation = pi / divider;
+    static constexpr double rotation = rcr::pi / divider;
     static constexpr double q        = Tq;
 
     static constexpr unsigned max_length   = 2 * divider * Tq; // 2pi / (pi / divider) * q
-    static constexpr unsigned addr_length  = needed_bits(max_length - 1);
+    static constexpr unsigned addr_length  = rcr::needed_bits<max_length - 1>();
     static constexpr int64_t  scale_factor = int64_t(1U << (In_W - 1));
 
 private:

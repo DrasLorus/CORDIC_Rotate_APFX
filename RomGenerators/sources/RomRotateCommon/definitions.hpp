@@ -17,11 +17,13 @@
  *
  */
 
-#ifndef _DEFINITIONS_HPP_
-#define _DEFINITIONS_HPP_
+#ifndef _ROMCORDIC_DEFINITIONS_HPP_
+#define _ROMCORDIC_DEFINITIONS_HPP_
 
 #include <cstddef>
 #include <cstdint>
+
+namespace rom_cordic_rotate {
 
 #ifdef M_PI
 constexpr double pi = M_PI;
@@ -33,6 +35,8 @@ constexpr double half_pi = pi / 2;
 constexpr double inv_pi  = 1 / pi;
 constexpr double two_pi  = 2 * pi;
 constexpr double inv_2pi = 0.5 * inv_pi;
+
+#if XILINX_MAJOR > 2019 || !defined (XILINX_MAJOR)
 
 constexpr uint32_t needed_bits(uint32_t value) {
     uint32_t result = 0;
@@ -47,4 +51,30 @@ constexpr bool is_pow_2(uint32_t value) {
     return (1U << (needed_bits(value) - 1)) == value;
 }
 
-#endif // _DEFINITIONS_HPP_
+#endif
+
+template <uint32_t value>
+constexpr uint32_t needed_bits() { return needed_bits<(value >> 1)>() + 1; }
+
+template <>
+constexpr uint32_t needed_bits<0>() { return 0; }
+
+template <>
+constexpr uint32_t needed_bits<1>() { return 1; }
+
+template <>
+constexpr uint32_t needed_bits<2>() { return 2; }
+
+template <uint32_t value>
+constexpr bool is_pow_2() {
+    return (1U << (needed_bits<value>() - 1)) == value;
+}
+
+template <>
+constexpr bool is_pow_2<0>() {
+    return false;
+}
+
+} // namespace rom_cordic_rotate
+
+#endif // _ROMCORDIC_DEFINITIONS_HPP_
