@@ -29,6 +29,12 @@
 
 namespace rcr = rom_cordic_rotate;
 
+#if __cplusplus >= 201402L || XILINX_MAJOR > 2019
+#define OWN_CONSTEXPR constexpr
+#else
+#define OWN_CONSTEXPR
+#endif
+
 template <unsigned In_W, unsigned NStages, unsigned Tq, unsigned divider = 2>
 class CRomGeneratorML {
     static_assert(In_W > 0, "Inputs can't be on zero bits.");
@@ -38,16 +44,23 @@ class CRomGeneratorML {
     static_assert(rcr::is_pow_2<divider>(), "divider must be a power of 2.");
 
 public:
+#if __cplusplus >= 201402L || XILINX_MAJOR > 2019
     static constexpr double rotation = rcr::pi / divider;
     static constexpr double q        = Tq;
 
     static constexpr unsigned max_length   = 2 * divider * Tq; // 2pi / (pi / divider) * q
     static constexpr unsigned addr_length  = rcr::needed_bits<max_length - 1>();
     static constexpr int64_t  scale_factor = int64_t(1U << (In_W - 1));
-
+#else
+    const double   rotation;
+    const double   q;
+    const unsigned max_length;
+    const unsigned addr_length;
+    const int64_t  scale_factor;
+#endif
 private:
-    constexpr std::complex<int64_t> cordic_ML(const std::complex<int64_t> & x_in,
-                                              uint8_t                       counter) {
+    OWN_CONSTEXPR std::complex<int64_t> cordic_ML(const std::complex<int64_t> & x_in,
+                                                  uint8_t                       counter) {
 
         int64_t A = x_in.real();
         int64_t B = x_in.imag();
@@ -73,9 +86,21 @@ private:
     }
 
 public:
+#if __cplusplus >= 201402L || XILINX_MAJOR > 2019
     uint8_t rom[max_length];
+#else
+    uint8_t        rom[2 * Tq * divider];
+#endif
 
-    CRomGeneratorML() {
+    CRomGeneratorML() 
+#if __cplusplus < 201402L
+        : rotation(rcr::pi / divider),
+          q(Tq),
+          max_length(2 * Tq * divider),
+          addr_length(rcr::needed_bits<2 * Tq * divider - 1>()),
+          scale_factor(int64_t(1U << (In_W - 1)))
+#endif
+    {
         for (unsigned n = 0; n < max_length; n++) {
             const double re_x = floor(double(scale_factor - 1) * cos(-rotation / double(q) * double(n)));
             const double im_x = floor(double(scale_factor - 1) * sin(-rotation / double(q) * double(n)));
@@ -157,5 +182,7 @@ void generate_rom_header_ml_raw(const char * filename) {
     }
     fprintf(rom_file, "%03d\n\n", uint16_t(rom.rom[rom.max_length - 1]));
 }
+
+#undef OWN_CONSTEXPR
 
 #endif // _ROM_GENERATOR_ML

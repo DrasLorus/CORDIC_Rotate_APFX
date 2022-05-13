@@ -15,10 +15,20 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required (VERSION 3.16.0 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.18.0 FATAL_ERROR)
 # setting this is required
 
-set (CMAKE_CXX_STANDARD 14)
+project (
+  CordicRotate
+  LANGUAGES CXX
+  VERSION 0.1
+)
+
+if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.2))
+  set (CMAKE_CXX_STANDARD 11)
+else ()
+  set (CMAKE_CXX_STANDARD 14)
+endif ()
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_CXX_EXTENSIONS OFF)
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../lib)
@@ -27,20 +37,13 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS true)
 
-project (
-  CordicRotate
-  LANGUAGES CXX
-  VERSION 0.1
-)
-
 # ##################################################################################################
 # Options
 # ##################################################################################################
 
 option (EXPORT_COMMANDS "export compile commands, for use with clangd for example." ON)
 option (ENABLE_XILINX "use Xilinx provided proprietary headers." OFF)
-
-option (ENABLE_TESTING "use Catch2 in conjunction with CTest as a test suite." ON)
+option (ENABLE_TESTING "use Catch2 (if possible) in conjunction with CTest as a test suite." ON)
 option (ENABLE_SOFTWARE
         "use C++ standard library types (like std::complex). Unsuitable for synthesis." ON
 )
@@ -65,7 +68,7 @@ if (ENABLE_XILINX)
   )
   set (
     XILINX_VER
-    "2020.2"
+    "2019.1"
     CACHE STRING "Xilinx software version to use."
   )
 
@@ -169,10 +172,15 @@ target_link_libraries (cordic_rom_gen PUBLIC romgen)
 file (GLOB ALL_CORDIC_ROM_SOURCES sources/CCordicRotateRom/*.cpp)
 list (REMOVE_ITEM ALL_CORDIC_ROM_SOURCES sources/CCordicRotateRom/${CORDIC_ROM_SOURCE})
 
-add_library (
-  cordic STATIC sources/CCordicRotateSmart/CCordicRotateSmart.cpp
-                sources/CCordicRotateConstexpr/CCordicRotateConstexpr.cpp ${ALL_CORDIC_ROM_SOURCES}
+add_library (cordic STATIC ${ALL_CORDIC_ROM_SOURCES})
+if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 6.2
+                                               )
 )
+  target_sources (
+    cordic PRIVATE sources/CCordicRotateSmart/CCordicRotateSmart.cpp
+                   sources/CCordicRotateConstexpr/CCordicRotateConstexpr.cpp
+  )
+endif ()
 target_include_directories (cordic PUBLIC sources)
 target_include_directories (cordic SYSTEM PUBLIC ${AP_INCLUDE_DIR})
 target_link_libraries (cordic PUBLIC romgen cordic_rom_gen)
@@ -180,27 +188,63 @@ target_link_libraries (cordic PUBLIC romgen cordic_rom_gen)
 # ##################################################################################################
 
 if (ENABLE_TESTING)
-  find_package (Catch2 REQUIRED)
-
-  string (
-    CONFIGURE
-      ${CMAKE_CURRENT_SOURCE_DIR}/sources/tb/cordic_rom_tb_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.cpp
-      TB_SOURCE
-  )
-  configure_file (sources/tb/cordic_rom_tb.cpp.in ${TB_SOURCE} @ONLY)
-
-  add_library (catch_common_${PROJECT_NAME} OBJECT sources/tb/main_catch2.cpp)
-  target_link_libraries (catch_common_${PROJECT_NAME} PUBLIC Catch2::Catch2)
-
-  file (GLOB ALL_ROM_TB_SOURCES sources/tb/cordic_rom_*.cpp)
-  list (REMOVE_ITEM ALL_ROM_TB_SOURCES ${TB_SOURCE})
-
-  add_executable (cordic_tb sources/tb/cordic_tb.cpp ${TB_SOURCE} ${ALL_ROM_TB_SOURCES})
-  target_link_libraries (cordic_tb PRIVATE cordic catch_common_${PROJECT_NAME})
-
   include (CTest)
-  include (Catch)
-  catch_discover_tests (cordic_tb WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data)
+  if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.2))
+    string (
+      CONFIGURE
+        ${CMAKE_CURRENT_SOURCE_DIR}/sources/tb/catch_less/cordic_rom_aptypes_tb_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.cpp
+        TB_SOURCE
+    )
+    configure_file (sources/tb/catch_less/cordic_rom_aptypes_tb.cpp.in ${TB_SOURCE} @ONLY)
+
+    file (GLOB ALL_ROM_TB_SOURCES sources/tb/catch_less/cordic_rom_aptypes*.cpp)
+    list (REMOVE_ITEM ALL_ROM_TB_SOURCES ${TB_SOURCE})
+
+    get_filename_component (FILE_RADIX ${TB_SOURCE} NAME_WE)
+    add_executable (${FILE_RADIX} ${TB_SOURCE})
+    target_link_libraries (${FILE_RADIX} PRIVATE cordic)
+
+    add_test (
+      NAME ${FILE_RADIX}
+      COMMAND ${FILE_RADIX}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data
+    )
+
+    foreach (TB_FILE ${ALL_ROM_TB_SOURCES})
+      get_filename_component (FILE_RADIX ${TB_FILE} NAME_WE)
+      add_executable (${FILE_RADIX} ${TB_FILE})
+      target_link_libraries (${FILE_RADIX} PRIVATE cordic)
+
+      add_test (
+        NAME ${FILE_RADIX}
+        COMMAND ${FILE_RADIX}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data
+      )
+    endforeach ()
+
+  else ()
+    find_package (Catch2 REQUIRED)
+
+    string (
+      CONFIGURE
+        ${CMAKE_CURRENT_SOURCE_DIR}/sources/tb/catchy/cordic_rom_tb_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.cpp
+        TB_SOURCE
+    )
+
+    configure_file (sources/tb/catchy/cordic_rom_tb.cpp.in ${TB_SOURCE} @ONLY)
+
+    add_library (catch_common_${PROJECT_NAME} OBJECT sources/tb/catchy/main_catch2.cpp)
+    target_link_libraries (catch_common_${PROJECT_NAME} PUBLIC Catch2::Catch2)
+
+    file (GLOB ALL_ROM_TB_SOURCES sources/tb/catchy/cordic_rom_*.cpp)
+    list (REMOVE_ITEM ALL_ROM_TB_SOURCES ${TB_SOURCE})
+
+    add_executable (cordic_tb sources/tb/catchy/cordic_tb.cpp ${TB_SOURCE} ${ALL_ROM_TB_SOURCES})
+    target_link_libraries (cordic_tb PRIVATE cordic catch_common_${PROJECT_NAME})
+
+    include (Catch)
+    catch_discover_tests (cordic_tb WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data)
+  endif ()
 endif ()
 
 file (GLOB ALL_ROM_HEADERS sources/CordicRoms/cordic_rom_*.hpp)

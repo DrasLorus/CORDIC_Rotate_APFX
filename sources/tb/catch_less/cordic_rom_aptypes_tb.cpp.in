@@ -1,0 +1,179 @@
+/*
+ *
+ * Copyright 2022 Camille "DrasLorus" Monière.
+ *
+ * This file is part of CORDIC_Rotate_APFX.
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * Lesser General Public License as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along with this program.
+ * If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+
+#include "CCordicRotateRom/CCordicRotateRom_@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@_@CORDIC_DIVIDER@.hpp"
+#include <fstream>
+#include <iostream>
+
+using namespace std;
+
+typedef CCordicRotateRom<4, @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDIC_Q@, @CORDIC_DIVIDER@> cordic_rom;
+
+template <unsigned n_lines>
+int section_1() {
+    //  SECTION("W:@CORDIC_W@ - I:4 - Stages:@CORDIC_STAGES@ - q:@CORDIC_Q@ - div:@CORDIC_DIVIDER@") {}
+
+    int counted_errors = 0;
+
+    static constexpr cordic_rom cordic {};
+
+    string input_fn = "../data/input.dat";
+
+    constexpr double   rotation = cordic_rom::rotation;
+    constexpr double   q        = cordic_rom::q;
+    constexpr uint64_t cnt_mask = 0xFF; // Value dependant of the way the ROM is initialized
+
+    constexpr unsigned Out_W = cordic_rom::Out_W;
+    constexpr unsigned In_W  = cordic_rom::In_W;
+
+    ap_int<In_W>  values_re_in[n_lines];
+    ap_int<In_W>  values_im_in[n_lines];
+    ap_int<Out_W> values_re_out[n_lines];
+    ap_int<Out_W> values_im_out[n_lines];
+
+    double results_re[n_lines];
+    double results_im[n_lines];
+
+    FILE * INPUT = fopen(input_fn.c_str(), "r");
+
+    // Init test vector
+    for (unsigned i = 0; i < n_lines; i++) {
+        double a, b, r;
+        fscanf(INPUT, "%lf,%lf,%lf\n", &a, &b, &r);
+
+        const complex<double> c {a, b};
+        values_re_in[i] = int64_t(a * double(cordic_rom::in_scale_factor));
+        values_im_in[i] = int64_t(b * double(cordic_rom::in_scale_factor));
+
+        const complex<double> e = c * exp(complex<double>(0., rotation / q * (i & cnt_mask)));
+        results_re[i]           = e.real();
+        results_im[i]           = e.imag();
+    }
+
+    fclose(INPUT);
+
+    constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
+
+    // Executing the CORDIC
+    for (unsigned iter = 0; iter < n_lines; iter++) {
+        // Execute
+        const uint8_t counter = uint8_t(iter & cnt_mask);
+
+        cordic_rom::cordic(
+            values_re_in[iter], values_im_in[iter],
+            counter,
+            values_re_out[iter], values_im_out[iter]);
+
+        const double res_re = values_re_out[iter].to_double() * 5. / 8. / cordic_rom::out_scale_factor;
+        const double res_im = values_im_out[iter].to_double() * 5. / 8. / cordic_rom::out_scale_factor;    
+        if (abs(res_re - results_re[iter]) > abs_margin) {
+            counted_errors++;
+        }
+        if (abs(res_im - results_im[iter]) > abs_margin) {
+            counted_errors++;
+        }
+    }
+
+    return counted_errors;
+}
+
+template <unsigned n_lines>
+int section_2() {
+    //  SECTION("W:@CORDIC_W@ - I:4 - Stages:@CORDIC_STAGES@ - q:@CORDIC_Q@ - div:@CORDIC_DIVIDER@ - internal scaling") 
+    int counted_errors = 0;
+
+    static constexpr cordic_rom cordic {};
+
+    string input_fn = "../data/input.dat";
+
+    constexpr double   rotation = cordic_rom::rotation;
+    constexpr double   q        = cordic_rom::q;
+    constexpr uint64_t cnt_mask = 0xFF; // Value dependant of the way the ROM is initialized
+
+    constexpr unsigned Out_W = cordic_rom::Out_W;
+    constexpr unsigned In_W  = cordic_rom::In_W;
+
+    ap_int<In_W>  values_re_in[n_lines];
+    ap_int<In_W>  values_im_in[n_lines];
+    ap_int<Out_W> values_re_out[n_lines];
+    ap_int<Out_W> values_im_out[n_lines];
+
+    double results_re[n_lines];
+    double results_im[n_lines];
+
+    FILE * INPUT = fopen(input_fn.c_str(), "r");
+
+    // Init test vector
+    for (unsigned i = 0; i < n_lines; i++) {
+        double a, b, r;
+        fscanf(INPUT, "%lf,%lf,%lf\n", &a, &b, &r);
+
+        const complex<double> c {a, b};
+        values_re_in[i] = int64_t(a * double(cordic_rom::in_scale_factor));
+        values_im_in[i] = int64_t(b * double(cordic_rom::in_scale_factor));
+
+        const complex<double> e = c * exp(complex<double>(0., rotation / q * (i & cnt_mask)));
+        results_re[i]           = e.real();
+        results_im[i]           = e.imag();
+    }
+
+    fclose(INPUT);
+
+    constexpr double abs_margin = double(1 << cordic.Out_I) * 2. / 100.;
+
+    // Executing the CORDIC
+    for (unsigned iter = 0; iter < n_lines; iter++) {
+        // Execute
+        const uint8_t counter = uint8_t(iter & cnt_mask);
+
+        cordic_rom::cordic(
+            values_re_in[iter], values_im_in[iter],
+            counter,
+            values_re_out[iter], values_im_out[iter]);
+
+        const double res_re = cordic_rom::scale_cordic(values_re_out[iter]).to_double() / cordic_rom::out_scale_factor;
+        const double res_im = cordic_rom::scale_cordic(values_im_out[iter]).to_double() / cordic_rom::out_scale_factor;
+
+        if (abs(res_re - results_re[iter]) > abs_margin) {
+            counted_errors++;
+        }
+        if (abs(res_im - results_im[iter]) > abs_margin) {
+            counted_errors++;
+        }
+    }
+
+    return counted_errors;
+}
+
+int main(int, char **) {
+
+    int counted_errors = 0;
+
+    const string       test_case = "ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDIC_Q@, @CORDIC_DIVIDER@) works with AP-Types";
+    constexpr unsigned n_lines   = 100000;
+
+    cout << "Test case: " << test_case << endl;
+
+    counted_errors += section_1<n_lines>();
+    counted_errors += section_2<n_lines>();
+
+    cout << (counted_errors == 0 ? "SUCCESS" : "FAILURE") << "." << endl;
+
+    return counted_errors;
+}

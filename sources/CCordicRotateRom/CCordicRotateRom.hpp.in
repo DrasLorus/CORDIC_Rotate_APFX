@@ -73,7 +73,7 @@ public:
         return in * kn_i / 16U;
     }
 
-#if !defined(__SYNTHESIS__) && defined(SOFTWARE)
+#if !defined(__SYNTHESIS__) && defined(SOFTWARE) && __cplusplus >= 201402L
     static constexpr std::complex<int64_t> cordic(std::complex<int64_t> x_in,
                                                   uint8_t               counter) {
 
@@ -124,7 +124,7 @@ public:
                        const ap_uint<8> & counter,
                        ap_int<Out_W> & re_out, ap_int<Out_W> & im_out) {
 
-        const ap_uint<nb_stages + 1> R = cordic_roms::@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@_@CORDIC_DIVIDER@[counter];
+        const ap_uint<nb_stages + 1> R = *(cordic_roms::@ROM_TYPE@_@CORDIC_W@_@CORDIC_STAGES@_@CORDIC_Q@_@CORDIC_DIVIDER@ + counter);
 
         ap_int<Out_W> A = bool(R[0]) ? ap_int<In_W>(-re_in) : re_in;
         ap_int<Out_W> B = bool(R[0]) ? ap_int<In_W>(-im_in) : im_in;

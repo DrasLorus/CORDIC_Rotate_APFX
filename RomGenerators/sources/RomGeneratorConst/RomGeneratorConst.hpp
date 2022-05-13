@@ -20,6 +20,8 @@
 #ifndef _ROM_GENERATOR_CONST_
 #define _ROM_GENERATOR_CONST_
 
+#if __cplusplus >= 201402L || XILINX_MAJOR > 2019
+
 #include <array>
 #include <climits>
 #include <cmath>
@@ -180,4 +182,5 @@ void generate_rom_header_cst_raw(const char * filename = "rom_cordic.txt") {
     fprintf(rom_file, "%03d\n\n", uint16_t(rom.rom[rom.max_length - 1]));
 }
 
+#endif // STANDARD GUARD
 #endif // _ROM_GENERATOR_CONST_

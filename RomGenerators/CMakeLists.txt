@@ -15,10 +15,20 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required (VERSION 3.16.0 FATAL_ERROR)
-# setting this is required
+cmake_minimum_required (VERSION 3.18.0 FATAL_ERROR)
+# setting this is
 
-set (CMAKE_CXX_STANDARD 14)
+project (
+  CordicRomGenerator
+  LANGUAGES CXX
+  VERSION 0.1
+)
+
+if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.2))
+  set (CMAKE_CXX_STANDARD 11)
+else ()
+  set (CMAKE_CXX_STANDARD 14)
+endif ()
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_CXX_EXTENSIONS OFF)
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../lib)
@@ -27,15 +37,14 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS true)
 
-project (
-  CordicRomGenerator
-  LANGUAGES CXX
-  VERSION 0.1
-)
+set (IS_GNU (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+set (IS_GNU_LEGACY ${IS_GNU} AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.2))
 
-add_library (
-  romgen sources/RomGeneratorML/RomGeneratorML.cpp sources/RomGeneratorConst/RomGeneratorConst.cpp
-)
+add_library (romgen sources/RomGeneratorML/RomGeneratorML.cpp)
+if (NOT IS_GNU_LEGACY)
+  target_sources (romgen PUBLIC sources/RomGeneratorConst/RomGeneratorConst.cpp)
+endif ()
+
 target_include_directories (romgen PUBLIC sources)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")

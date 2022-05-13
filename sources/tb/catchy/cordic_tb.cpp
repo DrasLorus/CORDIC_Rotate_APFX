@@ -63,7 +63,6 @@ TEST_CASE("Adaptive CORDIC work as intended", "[!mayfail][!hide][WIP]") {
     fclose(INPUT);
     fclose(RESULTS);
 
-
     constexpr double abs_margin = double(1 << 6) * 3. / 100.;
 
     // Save the results to a file

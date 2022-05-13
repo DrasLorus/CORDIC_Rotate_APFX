@@ -26,10 +26,17 @@
 
 using namespace std;
 
+#if __cplusplus >= 201402L || XILINX_MAJOR > 2019
+#define OWN_CONSTEXPR constexpr
+#else
+#define OWN_CONSTEXPR
+#endif
+
 template <unsigned NStages>
-constexpr complex<int64_t> cordic(complex<int64_t> x_in,
-                                  uint8_t          counter,
-                                  const uint8_t *  rom_cordic) {
+OWN_CONSTEXPR complex<int64_t> cordic(
+    complex<int64_t> x_in,
+    uint8_t          counter,
+    const uint8_t *  rom_cordic) {
 
     int64_t A = x_in.real();
     int64_t B = x_in.imag();
@@ -54,18 +61,7 @@ constexpr complex<int64_t> cordic(complex<int64_t> x_in,
     return {A, B};
 }
 
-template <unsigned NStages>
-void checkMC() {
-    const CRomGeneratorML<16, NStages, 64> rom;
-
-    string   fn = "result_MC_W16_S" + to_string(NStages) + "_Q64.dat";
-    ofstream res_file(fn);
-
-    for (unsigned u = 0; u < rom.max_length; u++) {
-        auto res = cordic<NStages>(4096, u, rom.rom);
-        res_file << double(res.real() * 155) / 1048576. << ", " << double(res.imag() * 155) / 1048576. << endl;
-    }
-}
+#if __cplusplus >= 201402L || XILINX_MAJOR > 2019
 
 template <unsigned NStages>
 void checkConst() {
@@ -79,6 +75,34 @@ void checkConst() {
         res_file << double(res.real() * 155) / 1048576. << ", " << double(res.imag() * 155) / 1048576. << endl;
     }
 }
+
+#else
+
+template <unsigned,unsigned,unsigned>
+void generate_rom_header_cst_raw(const string &) {}
+
+template <unsigned,unsigned,unsigned>
+void generate_rom_header_cst(const string &) {}
+
+template <unsigned>
+void checkConst() {}
+
+#endif
+
+
+template <unsigned NStages>
+void checkMC() {
+    const CRomGeneratorML<16, NStages, 64, 2> rom;
+
+    string   fn = "result_MC_W16_S" + to_string(NStages) + "_Q64.dat";
+    ofstream res_file(fn);
+
+    for (unsigned u = 0; u < rom.max_length; u++) {
+        complex<int64_t> res = cordic<NStages>(4096, u, rom.rom);
+        res_file << double(res.real() * 155) / 1048576. << ", " << double(res.imag() * 155) / 1048576. << endl;
+    }
+}
+
 
 int main(int argc, char * argv[]) {
 

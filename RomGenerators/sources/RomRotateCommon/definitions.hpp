@@ -36,7 +36,7 @@ constexpr double inv_pi  = 1 / pi;
 constexpr double two_pi  = 2 * pi;
 constexpr double inv_2pi = 0.5 * inv_pi;
 
-#if XILINX_MAJOR > 2019 || !defined (XILINX_MAJOR)
+#if __cplusplus >= 201402L || XILINX_MAJOR > 2019  
 
 constexpr uint32_t needed_bits(uint32_t value) {
     uint32_t result = 0;
