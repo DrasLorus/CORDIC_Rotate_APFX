@@ -24,7 +24,24 @@ project (
   VERSION 0.1
 )
 
+
 if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.2))
+  # message ( FATAL_ERROR "This project require a GNU compiler version greater than 6.2." "\nNote:
+  # If you tried to use g++-4.6.3 as provided by Xilinx Vivado v2019.1, use directly the TCL script
+  # " "in the folder `hls_files/cordicabs_16_4_6`." )
+  set (IS_GNU_LEGACY ON)
+else ()
+  set (IS_GNU_LEGACY OFF)
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    add_compile_options (/Zc:__cplusplus)
+    if (CMAKE_BUILD_TYPE STREQUAL Release OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
+        add_compile_options (/Ob0) # Disable inlining, that makes CL.EXE crash.
+    endif ()
+  endif ()
+endif ()
+
+
+if (IS_GNU_LEGACY)
   set (CMAKE_CXX_STANDARD 11)
 else ()
   set (CMAKE_CXX_STANDARD 14)
@@ -50,15 +67,25 @@ option (ENABLE_SOFTWARE
 
 option (PEDANTIC "use -Wall and -pedantic." ON)
 
+option (ENABLE_DEPFETCH "Allow to fetch dependency from external sources." OFF)
+
 # ##################################################################################################
 
 if (PEDANTIC)
-  add_compile_options (-Wall -pedantic)
+  add_compile_options (-Wall)
+  if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    add_compile_options (-pedantic)
+    endif ()
 endif ()
 
 if (EXPORT_COMMANDS)
   set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif ()
+
+if (ENABLE_DEPFETCH)
+  include (FetchContent)
+endif ()
+
 
 if (ENABLE_XILINX)
   set (
@@ -79,18 +106,32 @@ if (ENABLE_XILINX)
   endif ()
   message (STATUS "AP headers must lie under ${AP_INCLUDE_DIR}")
 else ()
-  set (
-    AP_TYPES_HINT
-    /usr/include
-    CACHE PATH "location of ap_types include directory."
-  )
-
-  find_file (
-    AP_FIXED ap_fixed.h
-    HINTS ${AP_TYPES_HINT}
-    PATH_SUFFIXES ap_types hls_ap_types/include REQUIRED
-  )
-
+  if (ENABLE_DEPFETCH)
+    FetchContent_Declare (
+        hlsaptypes
+        GIT_REPOSITORY https://github.com/DrasLorus/HLS_arbitrary_Precision_Types.git
+    )
+    
+    FetchContent_MakeAvailable (hlsaptypes)
+    
+    find_file (
+        AP_FIXED ap_fixed.h
+        HINTS ${hlsaptypes_SOURCE_DIR}
+        PATH_SUFFIXES "include"
+    )
+  else ()
+    set (
+      AP_TYPES_HINT
+      /usr/include
+      CACHE PATH "location of ap_types include directory."
+    )
+    
+    find_file (
+      AP_FIXED ap_fixed.h
+      HINTS ${AP_TYPES_HINT}
+      PATH_SUFFIXES ap_types hls_ap_types/include REQUIRED
+    )
+  endif ()
   get_filename_component (AP_INCLUDE_DIR ${AP_FIXED} DIRECTORY)
 endif ()
 
@@ -189,7 +230,7 @@ target_link_libraries (cordic PUBLIC romgen cordic_rom_gen)
 
 if (ENABLE_TESTING)
   include (CTest)
-  if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.2))
+  if (IS_GNU_LEGACY)
     string (
       CONFIGURE
         ${CMAKE_CURRENT_SOURCE_DIR}/sources/tb/catch_less/cordic_rom_aptypes_tb_${ROM_TYPE}_${CORDIC_W}_${CORDIC_STAGES}_${CORDIC_Q}_${CORDIC_DIVIDER}.cpp
@@ -223,7 +264,18 @@ if (ENABLE_TESTING)
     endforeach ()
 
   else ()
-    find_package (Catch2 REQUIRED)
+    if (ENABLE_DEPFETCH)
+      FetchContent_Declare (
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v2.13.9
+      )
+
+      FetchContent_MakeAvailable (Catch2)
+      list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib)
+    else ()
+      find_package (Catch2 REQUIRED)
+    endif ()
 
     string (
       CONFIGURE

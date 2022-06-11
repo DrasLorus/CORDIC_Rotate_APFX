@@ -38,10 +38,10 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
 
         constexpr unsigned n_lines = 100000;
 
-        complex<double> values_in[n_lines];
-        complex<double> values_out[n_lines];
+        vector<complex<double>> values_in(n_lines);
+        vector<complex<double>> values_out(n_lines);
 
-        complex<double> results[n_lines];
+        vector<complex<double>> results(n_lines);
 
         ifstream INPUT(input_fn);
 
@@ -93,13 +93,13 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
         constexpr unsigned Out_W = cordic_rom::Out_W;
         constexpr unsigned In_W  = cordic_rom::In_W;
 
-        ap_int<In_W>  values_re_in[n_lines];
-        ap_int<In_W>  values_im_in[n_lines];
-        ap_int<Out_W> values_re_out[n_lines];
-        ap_int<Out_W> values_im_out[n_lines];
+        vector<ap_int<In_W>>  values_re_in(n_lines);
+        vector<ap_int<In_W>>  values_im_in(n_lines);
+        vector<ap_int<Out_W>> values_re_out(n_lines);
+        vector<ap_int<Out_W>> values_im_out(n_lines);
 
-        double results_re[n_lines];
-        double results_im[n_lines];
+        vector<double> results_re(n_lines);
+        vector<double> results_im(n_lines);
 
         FILE * INPUT = fopen(input_fn.c_str(), "r");
 
@@ -148,13 +148,13 @@ TEST_CASE("ROM-based Cordic (TPL @ROM_TYPE@, @CORDIC_W@, @CORDIC_STAGES@, @CORDI
         constexpr unsigned Out_W = cordic_rom::Out_W;
         constexpr unsigned In_W  = cordic_rom::In_W;
 
-        ap_int<In_W>  values_re_in[n_lines];
-        ap_int<In_W>  values_im_in[n_lines];
-        ap_int<Out_W> values_re_out[n_lines];
-        ap_int<Out_W> values_im_out[n_lines];
+        vector<ap_int<In_W>>  values_re_in(n_lines);
+        vector<ap_int<In_W>>  values_im_in(n_lines);
+        vector<ap_int<Out_W>> values_re_out(n_lines);
+        vector<ap_int<Out_W>> values_im_out(n_lines);
 
-        double results_re[n_lines];
-        double results_im[n_lines];
+        vector<double> results_re(n_lines);
+        vector<double> results_im(n_lines);
 
         FILE * INPUT = fopen(input_fn.c_str(), "r");
 

@@ -90,8 +90,8 @@ public:
 
             const int64_t Ri = (R & mask) == mask ? 1 : -1;
 
-            const int64_t I = A + Ri * (B / int64_t(1U << (u - 1)));
-            B               = B - Ri * (A / int64_t(1U << (u - 1)));
+            const int64_t I = A + Ri * (B / int64_t(1LU << (u - 1)));
+            B               = B - Ri * (A / int64_t(1LU << (u - 1)));
             A               = I;
         }
 

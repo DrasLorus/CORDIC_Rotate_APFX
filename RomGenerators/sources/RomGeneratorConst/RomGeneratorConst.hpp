@@ -104,7 +104,7 @@ private:
 
             R = beta < 0 ? R | mask : R & nmask;
 
-            const double factor = sigma / double(1U << (u - 1));
+            const double factor = sigma / double(1LU << (u - 1));
 
             const double I = A + B * factor;
             B              = B - A * factor;
