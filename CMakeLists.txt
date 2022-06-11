@@ -173,9 +173,9 @@ file (GLOB ALL_CORDIC_ROM_SOURCES sources/CCordicRotateRom/*.cpp)
 list (REMOVE_ITEM ALL_CORDIC_ROM_SOURCES sources/CCordicRotateRom/${CORDIC_ROM_SOURCE})
 
 add_library (cordic STATIC ${ALL_CORDIC_ROM_SOURCES})
-if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 6.2
-                                               )
-)
+if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.2))
+
+else ()
   target_sources (
     cordic PRIVATE sources/CCordicRotateSmart/CCordicRotateSmart.cpp
                    sources/CCordicRotateConstexpr/CCordicRotateConstexpr.cpp
@@ -240,7 +240,7 @@ if (ENABLE_TESTING)
     list (REMOVE_ITEM ALL_ROM_TB_SOURCES ${TB_SOURCE})
 
     add_executable (cordic_tb sources/tb/catchy/cordic_tb.cpp ${TB_SOURCE} ${ALL_ROM_TB_SOURCES})
-    target_link_libraries (cordic_tb PRIVATE cordic catch_common_${PROJECT_NAME})
+    target_link_libraries (cordic_tb PUBLIC cordic catch_common_${PROJECT_NAME})
 
     include (Catch)
     catch_discover_tests (cordic_tb WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data)
