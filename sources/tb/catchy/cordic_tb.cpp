@@ -19,8 +19,10 @@
 
 #include "CCordicRotateConstexpr/CCordicRotateConstexpr.hpp"
 #include "CCordicRotateSmart/CCordicRotateSmart.hpp"
+
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include <catch2/catch.hpp>
 
@@ -36,14 +38,14 @@ TEST_CASE("Adaptive CORDIC work as intended", "[!mayfail][!hide][WIP]") {
     string output_fn = "../data/output.dat"; // _8_14_4_17_5_19_7_12
 
     constexpr unsigned n_lines = 100000;
-    ap_fixed<17, 5>    values_re_in[n_lines];
-    ap_fixed<17, 5>    values_im_in[n_lines];
-    ap_fixed<14, 4>    angles_in[n_lines];
-    ap_fixed<19, 7>    values_re_out[n_lines];
-    ap_fixed<19, 7>    values_im_out[n_lines];
+    vector<ap_fixed<17, 5>> values_re_in(n_lines);
+    vector<ap_fixed<17, 5>> values_im_in(n_lines);
+    vector<ap_fixed<14, 4>> angles_in(n_lines);
+    vector<ap_fixed<19, 7>> values_re_out(n_lines);
+    vector<ap_fixed<19, 7>> values_im_out(n_lines);
 
-    double exp_re_out[n_lines];
-    double exp_im_out[n_lines];
+    vector<double> exp_re_out(n_lines);
+    vector<double> exp_im_out(n_lines);
 
     FILE * INPUT   = fopen(input_fn.c_str(), "r");
     FILE * RESULTS = fopen(output_fn.c_str(), "r");
@@ -104,10 +106,10 @@ TEST_CASE("ROM-based Cordic works with C-Types", "[CORDIC]") {
 
         constexpr unsigned n_lines = 100000;
 
-        complex<double> values_in[n_lines];
-        complex<double> values_out[n_lines];
+        vector<complex<double>> values_in(n_lines);
+        vector<complex<double>> values_out(n_lines);
 
-        complex<double> results[n_lines];
+        vector<complex<double>> results(n_lines);
 
         // ofstream FILE;
 
@@ -165,7 +167,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
     SECTION("W:16 - I:4 - Stages:6 - q:64") {
         typedef CCordicRotateConstexpr<16, 4, 6, 64> cordic_rom;
 
-        static constexpr cordic_rom cordic {};
+        //static constexpr cordic_rom cordic {};
 
         string input_fn = "../data/input.dat";
 
@@ -176,13 +178,13 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         constexpr unsigned Out_W = cordic_rom::Out_W;
         constexpr unsigned In_W  = cordic_rom::In_W;
 
-        ap_int<In_W>  values_re_in[n_lines];
-        ap_int<In_W>  values_im_in[n_lines];
-        ap_int<Out_W> values_re_out[n_lines];
-        ap_int<Out_W> values_im_out[n_lines];
+        vector<ap_int<In_W>>  values_re_in(n_lines);
+        vector<ap_int<In_W>>  values_im_in(n_lines);
+        vector<ap_int<Out_W>> values_re_out(n_lines);
+        vector<ap_int<Out_W>> values_im_out(n_lines);
 
-        double results_re[n_lines];
-        double results_im[n_lines];
+        vector<double> results_re(n_lines);
+        vector<double> results_im(n_lines);
 
         // ofstream out_stream;
 
@@ -197,7 +199,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             values_re_in[i] = int64_t(a * double(cordic_rom::in_scale_factor));
             values_im_in[i] = int64_t(b * double(cordic_rom::in_scale_factor));
 
-            const complex<double> e = c * exp(complex<double>(0., rotation / q * (i & cnt_mask)));
+            const complex<double> e = c * exp(complex<double>(0., rotation / q * double(i & cnt_mask)));
             results_re[i]           = e.real();
             results_im[i]           = e.imag();
         }
@@ -208,7 +210,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         // ofstream out_stream("results_ap.dat");
         // FILE * romf = fopen("rom.dat", "w");
 
-        constexpr double abs_margin = double(1 << (cordic.Out_I - 1)) * 2. / 100.;
+        constexpr double abs_margin = double(1 << (cordic_rom::Out_I - 1)) * 2. / 100.;
 
         // Executing the encoder
         for (unsigned iter = 0; iter < n_lines; iter++) {
@@ -242,7 +244,6 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
     SECTION("W:16 - I:4 - Stages:6 - q:64 - internal scaling") {
         typedef CCordicRotateConstexpr<16, 4, 6, 64> cordic_rom;
-        static constexpr cordic_rom                  cordic {};
 
         string input_fn = "../data/input.dat";
 
@@ -253,13 +254,13 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         constexpr unsigned Out_W = cordic_rom::Out_W;
         constexpr unsigned In_W  = cordic_rom::In_W;
 
-        ap_int<In_W>  values_re_in[n_lines];
-        ap_int<In_W>  values_im_in[n_lines];
-        ap_int<Out_W> values_re_out[n_lines];
-        ap_int<Out_W> values_im_out[n_lines];
+        vector<ap_int<In_W>>  values_re_in(n_lines);
+        vector<ap_int<In_W>>  values_im_in(n_lines);
+        vector<ap_int<Out_W>> values_re_out(n_lines);
+        vector<ap_int<Out_W>> values_im_out(n_lines);
 
-        double results_re[n_lines];
-        double results_im[n_lines];
+        vector<double> results_re(n_lines);
+        vector<double> results_im(n_lines);
 
         // ofstream out_stream;
 
@@ -274,7 +275,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             values_re_in[i] = int64_t(a * double(cordic_rom::in_scale_factor));
             values_im_in[i] = int64_t(b * double(cordic_rom::in_scale_factor));
 
-            const complex<double> e = c * exp(complex<double>(0., rotation / q * (i & cnt_mask)));
+            const complex<double> e = c * exp(complex<double>(0., rotation / q * double(i & cnt_mask)));
             results_re[i]           = e.real();
             results_im[i]           = e.imag();
         }
@@ -285,7 +286,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         // out_stream.open("results_ap.dat");
         // FILE * romf = fopen("rom.dat", "w");
 
-        constexpr double abs_margin = double(1 << (cordic.Out_I - 1)) * 3. / 100.; // Internal scaling create noise
+        constexpr double abs_margin = double(1 << (cordic_rom::Out_I - 1)) * 3. / 100.; // Internal scaling create noise
 
         // Executing the encoder
         for (unsigned iter = 0; iter < n_lines; iter++) {
@@ -324,8 +325,6 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
     SECTION("W:16 - I:4 - Stages:6 - q:64 - divider:4") {
         typedef CCordicRotateConstexpr<16, 4, 6, 64, 4> cordic_rom;
 
-        static constexpr cordic_rom cordic {};
-
         string input_fn = "../data/input.dat";
 
         constexpr double   rotation = cordic_rom::rotation;
@@ -335,13 +334,13 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         constexpr unsigned Out_W = cordic_rom::Out_W;
         constexpr unsigned In_W  = cordic_rom::In_W;
 
-        ap_int<In_W>  values_re_in[n_lines];
-        ap_int<In_W>  values_im_in[n_lines];
-        ap_int<Out_W> values_re_out[n_lines];
-        ap_int<Out_W> values_im_out[n_lines];
+        vector<ap_int<In_W>>  values_re_in(n_lines);
+        vector<ap_int<In_W>>  values_im_in(n_lines);
+        vector<ap_int<Out_W>> values_re_out(n_lines);
+        vector<ap_int<Out_W>> values_im_out(n_lines);
 
-        double results_re[n_lines];
-        double results_im[n_lines];
+        vector<double> results_re(n_lines);
+        vector<double> results_im(n_lines);
 
         // ofstream out_stream;
 
@@ -356,7 +355,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
             values_re_in[i] = int64_t(a * double(cordic_rom::in_scale_factor));
             values_im_in[i] = int64_t(b * double(cordic_rom::in_scale_factor));
 
-            const complex<double> e = c * exp(complex<double>(0., rotation / q * (i & cnt_mask)));
+            const complex<double> e = c * exp(complex<double>(0., rotation / q * double(i & cnt_mask)));
             results_re[i]           = e.real();
             results_im[i]           = e.imag();
         }
@@ -367,7 +366,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         // out_stream.open("results_ap.dat");
         // FILE * romf = fopen("rom.dat", "w");
 
-        constexpr double abs_margin = double(1 << (cordic.Out_I - 1)) * 2. / 100.;
+        constexpr double abs_margin = double(1 << (cordic_rom::Out_I - 1)) * 2. / 100.;
 
         // Executing the encoder
         for (unsigned iter = 0; iter < n_lines; iter++) {
@@ -401,7 +400,6 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
 
     SECTION("W:16 - I:4 - Stages:6 - q:64 - divider:4 - internal scaling") {
         typedef CCordicRotateConstexpr<16, 4, 7, 64, 4> cordic_rom;
-        static constexpr cordic_rom                     cordic {};
 
         string input_fn = "../data/input.dat";
 
@@ -412,13 +410,13 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         constexpr unsigned Out_W = cordic_rom::Out_W;
         constexpr unsigned In_W  = cordic_rom::In_W;
 
-        ap_int<In_W>  values_re_in[n_lines];
-        ap_int<In_W>  values_im_in[n_lines];
-        ap_int<Out_W> values_re_out[n_lines];
-        ap_int<Out_W> values_im_out[n_lines];
+        vector<ap_int<In_W>>  values_re_in(n_lines);
+        vector<ap_int<In_W>>  values_im_in(n_lines);
+        vector<ap_int<Out_W>> values_re_out(n_lines);
+        vector<ap_int<Out_W>> values_im_out(n_lines);
 
-        double results_re[n_lines];
-        double results_im[n_lines];
+        vector<double> results_re(n_lines);
+        vector<double> results_im(n_lines);
 
         ofstream out_stream;
 
@@ -444,7 +442,7 @@ TEST_CASE("ROM-based Cordic works with AP-Types", "[CORDIC]") {
         // out_stream.open("results_ap.dat");
         // FILE * romf = fopen("rom.dat", "w");
 
-        constexpr double abs_margin = double(1 << (cordic.Out_I - 1)) * 3. / 100.; // Internal scaling creates noise
+        constexpr double abs_margin = double(1 << (cordic_rom::Out_I - 1)) * 3. / 100.; // Internal scaling creates noise
 
         // Executing the encoder
         for (unsigned iter = 0; iter < n_lines; iter++) {

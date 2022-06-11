@@ -12,3 +12,6 @@ sources/CCordicRotateRom/CCordicRotateRom_*.?pp
 sources/CordicRoms/cordic_rom_*.?pp
 sources/tb/catchy/cordic_rom_tb_??*_*.?pp
 sources/tb/catch_less/cordic_rom_aptypes_tb_??*_*.?pp
+
+CMakeSettings.json
+.vs
